@@ -431,6 +431,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
       <button class="btn btn-navy" onclick="changePw()" style="width:100%;padding:9px;font-size:13px;margin-top:8px;">비밀번호 변경</button>
     </div>
+    <div style="margin-top:12px;padding-top:14px;border-top:1px solid var(--bdr);">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">📦 데이터 백업 / 복구</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;">백업 파일을 주기적으로 저장해두세요. 실수로 삭제했을 때 복구할 수 있어요.</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-navy" onclick="downloadBackup()" style="flex:1;padding:9px;font-size:12px;">💾 백업 다운로드</button>
+        <button class="btn" onclick="document.getElementById('restore-file').click()" style="flex:1;padding:9px;font-size:12px;background:#F0EDE8;color:var(--navy);">📂 백업 복구</button>
+      </div>
+      <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreBackup(this)"/>
+    </div>
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button class="btn btn-cancel" onclick="closePnl()" style="flex:1;padding:10px;">닫기</button>
       <button class="btn btn-danger" onclick="doLogout()" style="flex:1;padding:10px;">로그아웃</button>
@@ -838,10 +847,10 @@ async function changePw(){
 //  SLOT ASSIGNMENT
 // ══════════════════════════════════════
 function assignSlots(cells,vacs){
-  const sm={};cells.filter(c=>!c.other).forEach(c=>{sm[c.i]=[];});
+  const sm={};cells.forEach(c=>{sm[c.i]=[];});
   const vs={};
   [...vacs].sort((a,b)=>a.start<b.start?-1:1).forEach(v=>{
-    const t=cells.filter(c=>!c.other&&c.d>=v.start&&c.d<=v.end).map(c=>c.i);
+    const t=cells.filter(c=>c.d>=v.start&&c.d<=v.end).map(c=>c.i);
     if(!t.length)return;
     let slot=0;while(t.some(i=>sm[i]&&sm[i][slot]!==undefined)){slot++;}
     t.forEach(i=>{if(sm[i])sm[i][slot]=v.id;});
@@ -951,8 +960,7 @@ function drawMonthBars(cells,fullVacs,vacSlot,halfVacs){
     const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;
     const col=gc(v.empId),ended=isEnded(v);
     const barTop=BAR_TOP_BASE+slot*(BAR_H+BAR_GAP);
-    const alpha=ended?'18':'BB',bdCol=ended?col+'66':col,txtCol=ended?'#AAAAAA':'#FFFFFF';
-    const touched=cells.filter(c=>!c.other&&c.d>=v.start&&c.d<=v.end);if(!touched.length)return;
+    const touched=cells.filter(c=>c.d>=v.start&&c.d<=v.end);if(!touched.length)return;
     const byRow={};touched.forEach(c=>{if(!byRow[c.row])byRow[c.row]=[];byRow[c.row].push(c);});
     Object.values(byRow).forEach(rc=>{
       rc.sort((a,b)=>a.col-b.col);
@@ -961,9 +969,19 @@ function drawMonthBars(cells,fullVacs,vacSlot,halfVacs){
       const fe=cellEls[first.i],le=cellEls[last.i];if(!fe||!le)return;
       const x1=fe.rect.left-wrapRect.left+2,x2=le.rect.right-wrapRect.left-2,barW=x2-x1;
       const barY=fe.rect.top-wrapRect.top+barTop;
+      // other 셀(이전/다음달)이면 연한 색으로
+      const isOtherRow=rc.every(c=>c.other);
+      const alpha=ended?'11':isOtherRow?'44':'BB';
+      const bdCol=ended?col+'44':col;
+      const txtCol=(ended||isOtherRow)?'transparent':'#FFFFFF';
       let borderR='0';if(isL&&isR)borderR='7px';else if(isL)borderR='7px 0 0 7px';else if(isR)borderR='0 7px 7px 0';
-      const arrowTip=(isR&&barW>20)?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${BAR_H/2}px solid transparent;border-bottom:${BAR_H/2}px solid transparent;border-left:7px solid ${col}${alpha};pointer-events:none;"></div>`:'';
-      barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${alpha};border-left:${isL?'2.5px':'0'} solid ${bdCol};border-radius:${borderR};padding-left:${isL?7:3}px;color:${txtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${isL?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.25);">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+      // 혼합 행(일부 other, 일부 현재달) 처리
+      const hasNonOther=rc.some(c=>!c.other);
+      const rowAlpha=ended?'11':hasNonOther?'BB':'44';
+      const rowTxtCol=(ended||!hasNonOther)?'transparent':'#FFFFFF';
+      const rowBdCol=ended?col+'44':col;
+      const arrowTip=(isR&&barW>20)?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${BAR_H/2}px solid transparent;border-bottom:${BAR_H/2}px solid transparent;border-left:7px solid ${col}${rowAlpha};pointer-events:none;"></div>`:'';
+      barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${rowAlpha};border-left:${isL?'2.5px':'0'} solid ${rowBdCol};border-radius:${borderR};padding-left:${isL?7:3}px;color:${rowTxtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${(isL&&hasNonOther)?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.25);">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
     });
   });
 
@@ -1117,6 +1135,79 @@ function goToday(){S.year=_today.getFullYear();S.month=_today.getMonth();renderM
 function chMo(d){S.month+=d;if(S.month<0){S.month=11;S.year--;}if(S.month>11){S.month=0;S.year++;}renderMonth();}
 function chYear(d){S.year+=d;renderYear();}
 function rerender(){if(S.view==='month')renderMonth();if(S.view==='year')renderYear();if(S.view==='emp')renderEmp();}
+
+// ══════════════════════════════════════
+//  백업 & 복구
+// ══════════════════════════════════════
+function downloadBackup(){
+  const now=new Date();
+  const stamp=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+  const backup={
+    version:1,
+    createdAt:now.toISOString(),
+    createdBy:currentUser?currentUser.name:'unknown',
+    employees:S.employees,
+    vacations:S.vacations,
+    nextId:S.nextId,
+    nextEmpId:S.nextEmpId,
+    annualDays:S.annualDays,
+  };
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`vacation_backup_${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  alert(`백업 파일이 다운로드됐어요.\n파일명: vacation_backup_${stamp}.json\n안전한 곳에 보관해주세요.`);
+}
+
+function restoreBackup(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.version||!data.employees||!data.vacations){
+        alert('올바른 백업 파일이 아닙니다.');return;
+      }
+      const confirm1=confirm(
+        `백업 파일 정보:\n`+
+        `생성일시: ${new Date(data.createdAt).toLocaleString('ko')}\n`+
+        `생성자: ${data.createdBy}\n`+
+        `직원 수: ${data.employees.length}명\n`+
+        `휴가 수: ${data.vacations.length}건\n\n`+
+        `현재 데이터를 이 백업으로 덮어쓸까요?\n이 작업은 되돌릴 수 없어요.`
+      );
+      if(!confirm1){input.value='';return;}
+      // Firebase에 쓰기
+      if(!window.DEMO_MODE){
+        await window.DB.write('tvac/employees',
+          Object.fromEntries(data.employees.map(e=>[e.id,e])));
+        await window.DB.write('tvac/vacations',
+          data.vacations.length?Object.fromEntries(data.vacations.map(v=>[v.id,v])):{});
+        await window.DB.write('tvac/meta',{
+          nextId:data.nextId||data.vacations.length+1,
+          nextEmpId:data.nextEmpId||data.employees.length+1,
+          annualDays:data.annualDays||15,
+        });
+      }
+      // 로컬 상태도 업데이트
+      S.employees=data.employees;
+      S.vacations=data.vacations;
+      S.nextId=data.nextId||data.vacations.length+1;
+      S.nextEmpId=data.nextEmpId||data.employees.length+1;
+      S.annualDays=data.annualDays||15;
+      input.value='';
+      closePnl();
+      rerender();
+      alert('복구가 완료됐어요!');
+    }catch(err){
+      alert('백업 파일을 읽는 중 오류가 발생했어요: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
 
 // ══════════════════════════════════════
 //  MODALS & CRUD
