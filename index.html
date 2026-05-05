@@ -961,27 +961,36 @@ function drawMonthBars(cells,fullVacs,vacSlot,halfVacs){
     const col=gc(v.empId),ended=isEnded(v);
     const barTop=BAR_TOP_BASE+slot*(BAR_H+BAR_GAP);
     const touched=cells.filter(c=>c.d>=v.start&&c.d<=v.end);if(!touched.length)return;
+    // 행별로 그룹핑 후 other/non-other 구간을 각각 별도 bar로 분리
     const byRow={};touched.forEach(c=>{if(!byRow[c.row])byRow[c.row]=[];byRow[c.row].push(c);});
     Object.values(byRow).forEach(rc=>{
       rc.sort((a,b)=>a.col-b.col);
-      const first=rc[0],last=rc[rc.length-1];
-      const isL=first.d===v.start,isR=last.d===v.end;
-      const fe=cellEls[first.i],le=cellEls[last.i];if(!fe||!le)return;
-      const x1=fe.rect.left-wrapRect.left+2,x2=le.rect.right-wrapRect.left-2,barW=x2-x1;
-      const barY=fe.rect.top-wrapRect.top+barTop;
-      // other 셀(이전/다음달)이면 연한 색으로
-      const isOtherRow=rc.every(c=>c.other);
-      const alpha=ended?'11':isOtherRow?'44':'BB';
-      const bdCol=ended?col+'44':col;
-      const txtCol=(ended||isOtherRow)?'transparent':'#FFFFFF';
-      let borderR='0';if(isL&&isR)borderR='7px';else if(isL)borderR='7px 0 0 7px';else if(isR)borderR='0 7px 7px 0';
-      // 혼합 행(일부 other, 일부 현재달) 처리
-      const hasNonOther=rc.some(c=>!c.other);
-      const rowAlpha=ended?'11':hasNonOther?'BB':'44';
-      const rowTxtCol=(ended||!hasNonOther)?'transparent':'#FFFFFF';
-      const rowBdCol=ended?col+'44':col;
-      const arrowTip=(isR&&barW>20)?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${BAR_H/2}px solid transparent;border-bottom:${BAR_H/2}px solid transparent;border-left:7px solid ${col}${rowAlpha};pointer-events:none;"></div>`:'';
-      barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${rowAlpha};border-left:${isL?'2.5px':'0'} solid ${rowBdCol};border-radius:${borderR};padding-left:${isL?7:3}px;color:${rowTxtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${(isL&&hasNonOther)?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.25);">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+      // 연속된 other/non-other 구간으로 분할
+      const segments=[];
+      let seg=null;
+      rc.forEach(cell=>{
+        if(!seg||seg.isOther!==cell.other){
+          seg={isOther:cell.other,cells:[cell]};segments.push(seg);
+        } else {seg.cells.push(cell);}
+      });
+      segments.forEach(seg=>{
+        const first=seg.cells[0],last=seg.cells[seg.cells.length-1];
+        const isL=first.d===v.start,isR=last.d===v.end;
+        const fe=cellEls[first.i],le=cellEls[last.i];if(!fe||!le)return;
+        const x1=fe.rect.left-wrapRect.left+2,x2=le.rect.right-wrapRect.left-2,barW=x2-x1;
+        const barY=fe.rect.top-wrapRect.top+barTop;
+        // other 셀이면 연한 색(27%), 현재달이면 진한 색(73%)
+        const segAlpha=ended?'18':seg.isOther?'44':'BB';
+        const segBd=ended?col+'44':seg.isOther?col+'66':col;
+        const segTxt=seg.isOther?'transparent':(ended?'#AAAAAA':'#FFFFFF');
+        let borderR='0';
+        if(isL&&isR)borderR='7px';
+        else if(isL)borderR='7px 0 0 7px';
+        else if(isR)borderR='0 7px 7px 0';
+        const arrowTip=(isR&&!seg.isOther&&barW>20)?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${BAR_H/2}px solid transparent;border-bottom:${BAR_H/2}px solid transparent;border-left:7px solid ${col}${segAlpha};pointer-events:none;"></div>`:'';
+        const showName=isL&&!seg.isOther;
+        barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${segAlpha};border-left:${isL?'2.5px':'0'} solid ${segBd};border-radius:${borderR};padding-left:${isL?7:3}px;color:${segTxt};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${showName?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.25);">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+      });
     });
   });
 
