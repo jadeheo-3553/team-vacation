@@ -10,11 +10,10 @@
      FIREBASE SDK  (Realtime Database + Auth)
      설정값은 아래 FIREBASE_CONFIG 객체에 입력하세요
 ═══════════════════════════════════════════════ -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, set, get, onValue, remove, push }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-
+<!-- Firebase compat SDK (글로벌 변수 방식 — 일반 script 태그와 호환) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
 // ▼▼▼ Firebase 콘솔에서 복사한 설정값을 여기에 입력하세요 ▼▼▼
 const firebaseConfig = {
   apiKey: "AIzaSyBf3T2kE7SsYuKosAzSYVbXYW-IBl_73Ws",
@@ -27,45 +26,42 @@ const firebaseConfig = {
 };
 // ▲▲▲ 여기까지 ▲▲▲
 
-const DEMO_MODE = FIREBASE_CONFIG.apiKey === "YOUR_API_KEY"; // 설정 전이면 로컬 데모로 동작
+const DEMO_MODE = FIREBASE_CONFIG.apiKey === "YOUR_API_KEY";
+window.DEMO_MODE = DEMO_MODE;
 
-let app, db;
+let _db = null;
 if (!DEMO_MODE) {
-  app = initializeApp(FIREBASE_CONFIG);
-  db  = getDatabase(app);
+  firebase.initializeApp(FIREBASE_CONFIG);
+  _db = firebase.database();
 }
 
-// ── DB 헬퍼 ──────────────────────────────────────────────────
+// ── DB 헬퍼 (window.DB 로 어디서든 접근 가능) ──
 window.DB = {
-  // 전체 읽기 (1회)
-  async read(path) {
-    if (DEMO_MODE) return null;
-    const snap = await get(ref(db, path));
-    return snap.exists() ? snap.val() : null;
+  // 1회 읽기
+  read(path) {
+    if (DEMO_MODE) return Promise.resolve(null);
+    return _db.ref(path).once('value').then(s => s.exists() ? s.val() : null);
   },
-  // 쓰기 (덮어쓰기)
-  async write(path, val) {
-    if (DEMO_MODE) return;
-    await set(ref(db, path), val);
+  // 쓰기
+  write(path, val) {
+    if (DEMO_MODE) return Promise.resolve();
+    return _db.ref(path).set(val);
   },
   // 삭제
-  async del(path) {
-    if (DEMO_MODE) return;
-    await remove(ref(db, path));
+  del(path) {
+    if (DEMO_MODE) return Promise.resolve();
+    return _db.ref(path).remove();
   },
-  // 실시간 리스너 (변경될 때마다 콜백)
+  // 실시간 리스너 (값이 바뀔 때마다 cb 호출)
   listen(path, cb) {
-    if (DEMO_MODE) return ()=>{};
-    const unsubscribe = onValue(ref(db, path), snap => {
-      cb(snap.exists() ? snap.val() : null);
-    });
-    return unsubscribe;
+    if (DEMO_MODE) return () => {};
+    const ref = _db.ref(path);
+    ref.on('value', snap => cb(snap.exists() ? snap.val() : null));
+    return () => ref.off('value');
   }
 };
 
-window.DEMO_MODE = DEMO_MODE;
-
-// 초기화 완료 알림
+// 준비 완료 신호
 window.dispatchEvent(new Event('firebase-ready'));
 </script>
 
