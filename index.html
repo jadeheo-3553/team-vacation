@@ -810,13 +810,21 @@ function gc(id){const i=S.employees.findIndex(e=>e.id===id);return i>=0?COLORS[i
 function fmtKo(s){const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`;}
 function daysBetween(s,e){return Math.round((pd(e)-pd(s))/86400000)+1;}
 function isEnded(v){return pd(v.end)<_today;}
-const TITLES=['회장','부회장','사장','부사장','전무','상무','이사','대표','부장','차장','과장','대리','팀장','실장','본부장','주임','사원','원장','소장','수석','책임','선임','연구원'];
+const TITLES=['회장','부회장','사장','부사장','전무','상무','이사','부장','차장','과장','대리','팀장','실장','본부장','주임','사원','원장','소장','수석','책임','선임','연구원'];
 function shortName(name){
-  // Remove trailing title (e.g. "홍길동 이사" → "홍길동")
   if(!name)return name;
+  name=name.trim();
+  // 끝에 붙은 직책 제거: "이강우 본부장" → "이강우"
   for(const t of TITLES){
-    if(name.endsWith(' '+t))return name.slice(0,-(t.length+1));
-    if(name.endsWith(t)&&name.length>t.length)return name.slice(0,-t.length);
+    if(name.endsWith(' '+t))return name.slice(0,-(t.length+1)).trim();
+    if(name===t)return name; // 이름 자체가 직책이면 그대로
+    if(name.endsWith(t)&&name.length>t.length&&name[name.length-t.length-1]===' ')
+      return name.slice(0,-t.length).trim();
+  }
+  // 중간이나 앞에 붙은 직책도 제거
+  for(const t of TITLES){
+    const idx=name.indexOf(' '+t);
+    if(idx>=0)return(name.slice(0,idx)+name.slice(idx+t.length+1)).trim();
   }
   return name;
 }
