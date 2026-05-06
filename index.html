@@ -344,7 +344,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .tl-dc.tl-empty{background:#F5F4F1;cursor:default;}
 .tl-dnum{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--muted);padding:3px 0 0 3px;pointer-events:none;line-height:1;font-weight:900;}
 .tl-dnum.tn-sat{color:#1A4EC8;font-size:18px;}.tl-dnum.tn-sun{color:#DD1111;font-size:18px;}.tl-dnum.tn-today{color:var(--accent);}
-.tl-bc-bar{position:absolute;display:flex;align-items:center;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;overflow:hidden;transition:opacity .14s;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:.2px;}
+.tl-bc-bar{position:absolute;display:flex;align-items:center;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;overflow:hidden;transition:opacity .14s;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:.2px;}
 .tl-bc-bar:hover{opacity:.75;}
 
 /* ══════════════════════════════════════
@@ -663,6 +663,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <option value="완료">완료</option>
           <option value="진행">진행중</option>
         </select>
+      </div>
+    </div>
+    <div class="emp-widgets" style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+      <div id="team-overview" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div id="density-chart" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;"></div>
+        <div id="mini-cal" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;"></div>
       </div>
     </div>
     <div class="vac-scroll">
@@ -1190,41 +1197,47 @@ function drawMonthBars(cells,fullVacs,vacSlot,halfVacs){
   canvas.innerHTML=barsHtml;
 }
 
-// ── Drag — document-level mousemove to avoid bar-canvas blocking ──
+// ── Drag — document-level to avoid bar-canvas blocking ──
 let dragOn=false,dragS=null,dragE=null,dragCtx='';
+
+// Helper: find cell data-date under a point (ignores bar-canvas)
+function cellAtPoint(x,y){
+  const bc=document.getElementById('bar-canvas');
+  const origPE=bc?bc.style.pointerEvents:'';
+  if(bc)bc.style.pointerEvents='none';
+  const el=document.elementFromPoint(x,y);
+  if(bc)bc.style.pointerEvents=origPE||'none';
+  if(!el)return null;
+  const cell=el.closest('[data-date]');
+  return cell?cell.dataset.date:null;
+}
 
 function mDS(e,d){
   e.preventDefault();
-  dragOn=true;dragS=d;dragE=d;dragCtx='m';hlDrag();
+  // Use cellAtPoint in case d is wrong due to bar-canvas
+  const found=cellAtPoint(e.clientX,e.clientY);
+  const startD=found||d;
+  dragOn=true;dragS=startD;dragE=startD;dragCtx='m';hlDrag();
 }
 // mDM/mDE kept for timeline drag
 function mDM(e,d){if(!dragOn||dragCtx!=='m')return;dragE=d;hlDrag();}
 function mDE(e,d){if(!dragOn||dragCtx!=='m')return;dragOn=false;dragE=d;hlDrag();const s=dragS<=dragE?dragS:dragE,en=dragS<=dragE?dragE:dragS;setTimeout(()=>openVacMo(s,en),10);dragS=null;dragE=null;}
 
-// Global mousemove: find cell under cursor even if bar-canvas is on top
+// Global mousemove
 document.addEventListener('mousemove',function(e){
   if(!dragOn||dragCtx!=='m')return;
-  // Temporarily hide bar-canvas to hit-test cells underneath
-  const bc=document.getElementById('bar-canvas');
-  if(bc)bc.style.pointerEvents='none';
-  const el=document.elementFromPoint(e.clientX,e.clientY);
-  if(bc)bc.style.pointerEvents='none'; // keep none
-  if(el){
-    const cell=el.closest('[data-date]');
-    if(cell&&cell.dataset.date){dragE=cell.dataset.date;hlDrag();}
-  }
+  const d=cellAtPoint(e.clientX,e.clientY);
+  if(d){dragE=d;hlDrag();}
 });
 
 document.addEventListener('mouseup',function(e){
   if(!dragOn)return;
   if(dragCtx==='m'){
-    // Final position
-    const bc=document.getElementById('bar-canvas');
-    if(bc)bc.style.pointerEvents='none';
-    const el=document.elementFromPoint(e.clientX,e.clientY);
-    if(el){const cell=el.closest('[data-date]');if(cell&&cell.dataset.date)dragE=cell.dataset.date;}
+    const d=cellAtPoint(e.clientX,e.clientY);
+    if(d)dragE=d;
     dragOn=false;hlDrag();
-    const s=dragS<=dragE?dragS:dragE,en=dragS<=dragE?dragE:dragS;
+    const s=dragS&&dragE?(dragS<=dragE?dragS:dragE):dragS;
+    const en=dragS&&dragE?(dragS<=dragE?dragE:dragS):dragE;
     if(s&&en)setTimeout(()=>openVacMo(s,en),10);
   } else {
     dragOn=false;hlDrag();
@@ -1318,7 +1331,7 @@ function drawTLBars(y,m){
     const alpha=ended?'1A':'BB',bdCol=ended?col+'55':col,txtCol=ended?'#AAAAAA':'#FFFFFF';
     let borderR='0';if(isL&&isR)borderR='5px';else if(isL)borderR='5px 0 0 5px';else if(isR)borderR='0 5px 5px 0';
     const arrowTip=isR?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${TL_BAR_H/2}px solid transparent;border-bottom:${TL_BAR_H/2}px solid transparent;border-left:5px solid ${col}${alpha};pointer-events:none;"></div>`:'';
-    barsHtml+=`<div class="tl-bc-bar" style="left:${x1}px;top:${barTopY}px;width:${barW}px;height:${TL_BAR_H}px;background:${col}${alpha};border-left:${isL?'2px':'0'} solid ${bdCol};border-radius:${borderR};padding-left:${isL?5:2}px;color:${txtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start} ~ ${v.end}">${isL?`<span style="font-size:8px;font-weight:800;pointer-events:none;">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+    barsHtml+=`<div class="tl-bc-bar" style="left:${x1}px;top:${barTopY}px;width:${barW}px;height:${TL_BAR_H}px;background:${col}${alpha};border-left:${isL?'2px':'0'} solid ${bdCol};border-radius:${borderR};padding-left:${isL?5:2}px;color:${txtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start} ~ ${v.end}">${isL?`<span style="font-size:12px;font-weight:800;pointer-events:none;">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
   });
   mHalf.forEach(v=>{const d=parseInt(v.start.split('-')[2]);const cel=cellEls[d];if(!cel)return;const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);const isAM=v.type==='반차오전';const cr=cel.rect;const x=cr.left-rowRect.left+(isAM?0:cr.width/2);const w=cr.width/2;const rowH=rowEl.getBoundingClientRect().height;barsHtml+=`<div class="tl-bc-bar" style="left:${x}px;top:${rowH-18}px;width:${w}px;height:14px;background:${isAM?'#FEF9C3':'#FEF3C7'};border-top:2px solid ${isAM?'#CA8A04':'#D97706'};border-radius:${isAM?'3px 0 0 3px':'0 3px 3px 0'};padding-left:2px;color:${isAM?'#854D0E':'#92400E'};font-size:7px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start}"><span style="pointer-events:none">${isAM?'☀':'🌙'} ${emp.name}</span></div>`;});
   canvas.innerHTML=barsHtml;
@@ -1446,7 +1459,14 @@ function changeAnnualDays(){const n=parseInt(prompt('연간 기본 연차 일수
 // ══════════════════════════════════════
 function switchTab(tab){
   S.view=tab;
-  ['month','year','emp'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('active',t===tab);document.getElementById('v-'+t).style.display=t===tab?'flex':'none';});
+  ['month','year','emp'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+    const el=document.getElementById('v-'+t);
+    if(t!==tab){el.style.display='none';return;}
+    if(t==='month')el.style.display='grid';
+    else if(t==='year')el.style.display='flex';
+    else if(t==='emp')el.style.display='grid';
+  });
   if(tab==='year'){const q=Math.floor(S.month/3)+1;if(q!==curQ){curQ=q;document.querySelectorAll('.qtab').forEach((btn,i)=>{btn.classList.toggle('active',i+1===q);});}renderYear();}
   if(tab==='month')renderMonth();
   if(tab==='emp')renderEmp();
@@ -1542,7 +1562,13 @@ function saveEmp(){
   else{const emp={id:S.nextEmpId++,name:n,dept:d||'미지정'};S.employees.push(emp);fbSaveEmployee(emp);}
   closeMo('emp-mo');
 }
-function openVacMo(s,e){document.getElementById('vac-mo-title').textContent='휴가 등록';document.getElementById('vac-eid').value='';document.getElementById('vs').innerHTML=S.employees.map(emp=>`<option value="${emp.id}">${emp.name} (${emp.dept})</option>`).join('');document.getElementById('v1').value=s||dsFn(S.year,S.month,1);document.getElementById('v2').value=e||dsFn(S.year,S.month,1);document.getElementById('vt').value='연차';document.getElementById('vreason').value='';document.getElementById('vmemo').value='';document.getElementById('vac-mo').classList.add('show');}
+function openVacMo(s,e){
+  if(!currentUser){alert('로그인이 필요합니다.');return;}
+  document.getElementById('vac-mo-title').textContent='휴가 등록';
+  document.getElementById('vac-eid').value='';
+  document.getElementById('vs').innerHTML=S.employees.length
+    ? S.employees.map(emp=>`<option value="${emp.id}">${emp.name} (${emp.dept})</option>`).join('')
+    : '<option value="">직원을 먼저 추가해주세요</option>';document.getElementById('v1').value=s||dsFn(S.year,S.month,new Date().getDate());document.getElementById('v2').value=e||dsFn(S.year,S.month,new Date().getDate());document.getElementById('vt').value='연차';document.getElementById('vreason').value='';document.getElementById('vmemo').value='';document.getElementById('vac-mo').classList.add('show');}
 function openVacEdit(id){
   if(!currentUser)return;
   const v=S.vacations.find(x=>x.id===id);if(!v)return;
