@@ -184,152 +184,236 @@ window.dispatchEvent(new Event('firebase-ready'));
 
 <style>
 /* ══════════════════════════════════════
-   MAIN APP CSS
+   MAIN APP — 27" optimised layout
 ══════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --bg:#EDEAE4;--sur:#fff;--navy:#0D1C3F;--navy2:#1B2F5E;
   --slate:#3D4F6B;--muted:#8696AA;--bdr:#DDD8D0;
   --red:#C0392B;--blue:#1A56C4;--accent:#E09000;
+  --bar-h:8px; /* bar thickness */
 }
 html,body{height:100%;overflow:hidden;}
 body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--navy);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;}
-.app{display:flex;flex-direction:column;height:100vh;padding:10px 14px;gap:8px;overflow:hidden;align-items:center;}
-.app>*{width:100%;max-width:var(--cal-max-w,100%);}
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;background:var(--navy);border-radius:12px;flex-shrink:0;}
-.hdr-l{display:flex;align-items:center;gap:10px;}
-.hdr-icon{font-size:18px;}
-.hdr-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:#fff;line-height:1;}
-.hdr-sub{font-size:14px;color:rgba(255,255,255,.9);margin-top:3px;font-weight:600;}
-.hdr-r{display:flex;gap:6px;}
-.btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;transition:all .15s;white-space:nowrap;}
+
+/* ── SHELL ── */
+.app{display:flex;flex-direction:column;height:100vh;padding:8px 12px;gap:6px;overflow:hidden;}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:var(--navy);border-radius:10px;flex-shrink:0;}
+.hdr-l{display:flex;align-items:center;gap:8px;}
+.hdr-icon{font-size:16px;}
+.hdr-title{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1.5px;color:#fff;line-height:1;}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:2px;font-weight:600;}
+.hdr-r{display:flex;gap:5px;}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;transition:all .15s;white-space:nowrap;}
 .btn-p{background:#D94F3D;color:#fff;}.btn-p:hover{background:#b83528;}
 .btn-g{background:rgba(255,255,255,.11);color:#fff;border:1px solid rgba(255,255,255,.17);}.btn-g:hover{background:rgba(255,255,255,.2);}
 .btn-cancel{background:var(--bg);color:var(--navy);}.btn-cancel:hover{background:var(--bdr);}
 .btn-navy{background:var(--navy);color:#fff;}.btn-navy:hover{background:var(--navy2);}
 .btn-danger{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;}.btn-danger:hover{background:#FECACA;}
-.tabs{display:flex;gap:2px;background:rgba(255,255,255,.55);border:1px solid var(--bdr);border-radius:10px;padding:3px;flex-shrink:0;}
-.tab{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;transition:all .15s;background:transparent;color:var(--muted);}
-.tab.active{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(13,28,63,.2);}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;background:rgba(255,255,255,.55);border:1px solid var(--bdr);border-radius:9px;padding:3px;flex-shrink:0;}
+.tab{flex:1;padding:6px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;transition:all .15s;background:transparent;color:var(--muted);}
+.tab.active{background:var(--navy);color:#fff;box-shadow:0 2px 6px rgba(13,28,63,.2);}
 .tab:hover:not(.active){background:rgba(13,28,63,.06);color:var(--navy);}
-.stat-bar{display:flex;gap:7px;flex-shrink:0;}
-.stat-card{flex:1;background:var(--sur);border-radius:9px;border:1px solid var(--bdr);padding:8px 12px;display:flex;align-items:center;gap:8px;}
-.stat-icon{font-size:15px;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.stat-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:var(--navy);}
-.stat-lbl{font-size:13px;color:var(--navy);font-weight:700;}
-.month-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;flex-shrink:0;gap:8px;}
-.month-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;color:var(--navy);line-height:1;justify-self:start;}
-.nav-center{display:flex;align-items:center;gap:6px;justify-self:center;}
-.nav-right{display:flex;align-items:center;gap:6px;justify-self:end;}
-.legend{display:flex;flex-wrap:wrap;gap:5px;padding:7px 11px;background:var(--sur);border-radius:9px;border:1px solid var(--bdr);flex-shrink:0;}
-.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--slate);padding:2px 7px;border-radius:20px;background:var(--bg);border:1px solid var(--bdr);}
-.leg-dot{width:8px;height:8px;border-radius:50%;}
-.nav-btn{width:36px;height:36px;border-radius:9px;border:2px solid var(--bdr);background:var(--sur);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+
+/* ── NAV BUTTON ── */
+.nav-btn{width:32px;height:32px;border-radius:8px;border:2px solid var(--bdr);background:var(--sur);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .nav-btn:hover{background:var(--navy);border-color:var(--navy);}
 .nav-btn svg{pointer-events:none;}
 .nav-btn:hover svg path{stroke:#fff;}
-.drag-hint{text-align:center;padding:5px;font-size:13px;color:var(--slate);font-weight:700;background:rgba(224,144,0,.07);border-radius:7px;border:1px dashed rgba(224,144,0,.4);flex-shrink:0;}
-.cal-outer{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;align-items:center;width:100%;}
-.cal-wrap{background:var(--sur);border-radius:12px;border:1px solid var(--bdr);display:flex;flex-direction:column;height:100%;overflow:hidden;width:100%;}
+.nav-btn.today-btn{width:auto;padding:0 10px;font-size:11px;font-weight:700;color:var(--navy);}
+
+/* ══════════════════════════════════════
+   MONTH VIEW — 2-column split
+   Left: sidebar (stats + legend + upcoming)
+   Right: calendar
+══════════════════════════════════════ */
+#v-month{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-columns:220px 1fr;
+  grid-template-rows:1fr;
+  gap:8px;
+  overflow:hidden;
+}
+
+/* LEFT SIDEBAR */
+.month-sidebar{
+  display:flex;flex-direction:column;gap:6px;overflow:hidden;
+}
+.sidebar-top{
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.month-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.5px;color:var(--navy);line-height:1;}
+.nav-grp{display:flex;gap:4px;align-items:center;}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex-shrink:0;}
+.stat-card{background:var(--sur);border-radius:8px;border:1px solid var(--bdr);padding:7px 10px;display:flex;align-items:center;gap:7px;}
+.stat-icon{font-size:14px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--navy);}
+.stat-lbl{font-size:10px;color:var(--navy);font-weight:700;margin-top:1px;}
+
+.drag-hint{text-align:center;padding:5px 8px;font-size:10px;color:var(--slate);font-weight:600;background:rgba(224,144,0,.07);border-radius:7px;border:1px dashed rgba(224,144,0,.4);flex-shrink:0;}
+
+.legend{display:flex;flex-direction:column;gap:3px;padding:7px 10px;background:var(--sur);border-radius:9px;border:1px solid var(--bdr);flex:1;overflow-y:auto;min-height:0;}
+.legend-title{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;flex-shrink:0;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--slate);padding:3px 0;}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+.upcoming-box{padding:7px 10px;background:var(--sur);border-radius:9px;border:1px solid var(--bdr);flex-shrink:0;max-height:100px;overflow-y:auto;}
+.upcoming-title{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.up-pill{display:flex;align-items:center;gap:5px;padding:2px 0;font-size:10px;font-weight:600;}
+.up-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* RIGHT: CALENDAR */
+.cal-outer{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.cal-wrap{background:var(--sur);border-radius:12px;border:1px solid var(--bdr);display:flex;flex-direction:column;height:100%;overflow:hidden;}
 .cal-head{display:grid;grid-template-columns:repeat(7,1fr);flex-shrink:0;background:var(--navy);}
-.cal-hc{padding:9px 0;text-align:center;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;}
-.cal-hc.hc-sun{color:#FF7070;text-shadow:0 0 6px rgba(255,255,255,.5);}
-.cal-hc.hc-sat{color:#74AAFF;text-shadow:0 0 6px rgba(255,255,255,.5);}
-.cal-hc.hc-wd{color:#C8D8FF;text-shadow:0 0 4px rgba(255,255,255,.3);}
+.cal-hc{padding:7px 0;text-align:center;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;}
+.cal-hc.hc-sun{color:#FF7070;text-shadow:0 0 5px rgba(255,255,255,.4);}
+.cal-hc.hc-sat{color:#74AAFF;text-shadow:0 0 5px rgba(255,255,255,.4);}
+.cal-hc.hc-wd{color:#C8D8FF;}
 .cal-body-wrap{flex:1;min-height:0;position:relative;}
 .cal-body{display:grid;grid-template-columns:repeat(7,1fr);height:100%;}
-.cal-cell{border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);position:relative;cursor:crosshair;user-select:none;-webkit-user-select:none;transition:background .1s;}
+.cal-cell{border-right:1px solid var(--bdr);border-bottom:1px solid var(--bdr);position:relative;cursor:crosshair;user-select:none;-webkit-user-select:none;transition:background .1s;overflow:hidden;}
 .cal-cell:nth-child(7n){border-right:none;}
 .cal-cell.last-row{border-bottom:none;}
 .cal-cell.cm-other{background:#F9F8F6;}
 .cal-cell.cm-today{background:#FFFCF0;}
 .cal-cell.cm-sel{background:#B0B8C8 !important;}
 .cal-cell:hover:not(.cm-other){background:#F7F5F2;}
-.cal-cell.cm-sun:not(.cm-other){background:rgba(192,57,43,.07);}
-.cal-cell.cm-sat:not(.cm-other){background:rgba(26,86,196,.07);}
+.cal-cell.cm-sun:not(.cm-other){background:rgba(192,57,43,.06);}
+.cal-cell.cm-sat:not(.cm-other){background:rgba(26,86,196,.06);}
 .cal-cell.cm-past:not(.cm-other){background:#F2F1EE;}
-.cal-cell.cm-past .dnum{color:#AAAAAA;}
-.cal-cell.cm-past .dnum.dn-sun{color:#D49090;}
-.cal-cell.cm-past .dnum.dn-sat{color:#8AACDD;}
-.dnum-wrap{padding:5px 5px 0 7px;pointer-events:none;}
-.dnum{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--navy);}
+.cal-cell.cm-past .dnum{color:#BBBBB;}
+.dnum-wrap{padding:4px 4px 0 6px;pointer-events:none;flex-shrink:0;}
+.dnum{font-family:'Bebas Neue',sans-serif;font-size:17px;line-height:1;color:var(--navy);}
 .dnum.dn-other{color:#CCC;}.dnum.dn-sun{color:var(--red);}.dnum.dn-sat{color:var(--blue);}
-.dnum.dn-today{background:var(--navy);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;}
+.dnum.dn-today{background:var(--navy);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;}
 #bar-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible;}
-.bc-bar{position:absolute;display:flex;align-items:center;font-size:9.5px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;transition:opacity .14s;overflow:hidden;}
+.bc-bar{position:absolute;display:flex;align-items:center;font-size:8.5px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;transition:opacity .14s;overflow:hidden;}
 .bc-bar:hover{opacity:.78;}
-#v-year{display:flex;flex-direction:column;flex:1;gap:8px;overflow:hidden;min-height:0;width:100vw !important;max-width:100vw !important;position:relative;margin-left:calc(-50vw + 50%);padding:0 14px;}
-.year-title-txt{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;color:var(--navy);line-height:1;}
+
+/* ══════════════════════════════════════
+   YEAR VIEW
+══════════════════════════════════════ */
+#v-year{
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;gap:6px;overflow:hidden;
+  /* full width override */
+  width:100vw !important;max-width:100vw !important;
+  position:relative;margin-left:calc(-50vw + 50%);padding:0 12px;
+}
+.year-top{
+  display:flex;align-items:center;justify-content:center;
+  gap:16px;flex-shrink:0;position:relative;
+}
+.year-title-txt{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.5px;color:var(--navy);line-height:1;}
 .q-tabs{display:flex;gap:3px;background:rgba(255,255,255,.55);border:1px solid var(--bdr);border-radius:9px;padding:3px;}
-.qtab{padding:5px 13px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;transition:all .14s;background:transparent;color:var(--muted);}
+.qtab{padding:4px 12px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;transition:all .14s;background:transparent;color:var(--muted);}
 .qtab.active{background:var(--navy);color:#fff;}
 .qtab:hover:not(.active){background:rgba(13,28,63,.07);color:var(--navy);}
-.tl-outer{flex:1;overflow:auto;border-radius:12px;min-height:0;width:100%;max-width:100% !important;}
-.tl-wrap{background:var(--sur);min-width:600px;border:1px solid var(--bdr);border-radius:12px;overflow:hidden;}
-.tl-col-head{display:flex;background:var(--navy);position:sticky;top:0;z-index:20;}
-.tl-lbl-head{width:76px;flex-shrink:0;padding:7px 9px;font-size:10px;font-weight:700;color:rgba(255,255,255,.35);border-right:1px solid rgba(255,255,255,.1);}
+.year-nav-grp{display:flex;gap:4px;}
+.yr-legend{display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px;background:var(--sur);border-radius:8px;border:1px solid var(--bdr);flex-shrink:0;align-self:center;max-width:100%;}
+
+/* Timeline: height fills remaining space, no vertical scroll */
+.tl-outer{flex:1;overflow-x:auto;overflow-y:hidden;border-radius:12px;min-height:0;}
+.tl-wrap{background:var(--sur);min-width:600px;border:1px solid var(--bdr);border-radius:12px;overflow:hidden;height:100%;display:flex;flex-direction:column;}
+.tl-col-head{display:flex;background:var(--navy);position:sticky;top:0;z-index:20;flex-shrink:0;}
+.tl-lbl-head{width:68px;flex-shrink:0;padding:6px 8px;font-size:10px;font-weight:700;color:rgba(255,255,255,.35);border-right:1px solid rgba(255,255,255,.1);}
 .tl-days-head{display:flex;flex:1;}
-.tl-dhc{flex:1;text-align:center;padding:6px 0;font-family:'Bebas Neue',sans-serif;font-size:13px;color:rgba(255,255,255,.5);border-right:1px solid rgba(255,255,255,.05);}
+.tl-dhc{flex:1;text-align:center;padding:5px 0;font-family:'Bebas Neue',sans-serif;font-size:12px;color:rgba(255,255,255,.5);border-right:1px solid rgba(255,255,255,.05);}
 .tl-dhc.dhc-sat{color:#3377EE;font-weight:900;}.tl-dhc.dhc-sun{color:#FF3333;font-weight:900;}.tl-dhc.dhc-today{color:#FFD060;}
-.tl-month-row{display:flex;border-bottom:1px solid var(--bdr);position:relative;}
+/* Month rows share equal height */
+.tl-body{flex:1;min-height:0;display:flex;flex-direction:column;}
+.tl-month-row{display:flex;border-bottom:1px solid var(--bdr);flex:1;min-height:0;}
 .tl-month-row:last-child{border-bottom:none;}
-.tl-row-lbl{width:76px;flex-shrink:0;padding:7px 9px;border-right:1px solid var(--bdr);background:#F8F7F4;display:flex;flex-direction:column;justify-content:flex-start;}
-.tl-lbl-en{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--navy);}
-.tl-lbl-ko{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.3px;}
-.tl-row-days{flex:1;display:flex;position:relative;}
+.tl-row-lbl{width:68px;flex-shrink:0;padding:6px 8px;border-right:1px solid var(--bdr);background:#F8F7F4;display:flex;flex-direction:column;justify-content:flex-start;}
+.tl-lbl-en{font-family:'Bebas Neue',sans-serif;font-size:18px;line-height:1;color:var(--navy);}
+.tl-lbl-ko{font-size:9px;font-weight:700;color:var(--muted);}
+.tl-row-days{flex:1;display:flex;position:relative;overflow:hidden;}
 .tl-dc{flex:1;border-right:1px solid var(--bdr);position:relative;cursor:crosshair;user-select:none;-webkit-user-select:none;}
 .tl-dc:last-child{border-right:none;}
-.tl-dc.tl-sat{background:rgba(26,86,196,.08);}.tl-dc.tl-sun{background:rgba(210,20,20,.04);}
+.tl-dc.tl-sat{background:rgba(26,86,196,.06);}.tl-dc.tl-sun{background:rgba(210,20,20,.04);}
 .tl-dc.tl-today{background:rgba(224,144,0,.08);}.tl-dc.tl-sel{background:#EBF2FF;}
 .tl-dc.tl-empty{background:#F5F4F1;cursor:default;}
-.tl-dnum{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--muted);padding:3px 0 0 3px;pointer-events:none;line-height:1;}
+.tl-dnum{font-family:'Bebas Neue',sans-serif;font-size:12px;color:var(--muted);padding:3px 0 0 3px;pointer-events:none;line-height:1;}
 .tl-dnum.tn-sat{color:#1A4EC8;font-weight:900;}.tl-dnum.tn-sun{color:#DD1111;font-weight:900;}.tl-dnum.tn-today{color:var(--accent);}
-.tl-bc-bar{position:absolute;display:flex;align-items:center;font-size:8px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;overflow:hidden;transition:opacity .14s;}
+.tl-bc-bar{position:absolute;display:flex;align-items:center;font-size:7.5px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;overflow:hidden;transition:opacity .14s;}
 .tl-bc-bar:hover{opacity:.75;}
-#v-emp{display:flex;flex-direction:column;flex:1;gap:8px;overflow:hidden;min-height:0;}
-.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;flex-shrink:0;}
-.emp-card{background:var(--sur);border-radius:11px;border:1px solid var(--bdr);padding:10px 12px;display:flex;align-items:center;gap:9px;}
-.emp-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
-.emp-nm{font-size:13px;font-weight:700;color:var(--navy);}.emp-dp{font-size:10px;color:var(--muted);}
+
+/* ══════════════════════════════════════
+   EMP VIEW — 2-column split
+   Left: employee cards
+   Right: vacation table
+══════════════════════════════════════ */
+#v-emp{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:10px;
+  overflow:hidden;
+}
+.emp-left{display:flex;flex-direction:column;gap:6px;overflow:hidden;}
+.emp-left-hdr{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.sec-lbl{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.5px;color:var(--navy);}
+.emp-scroll{flex:1;overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:5px;padding-right:2px;}
+.emp-card{background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:9px 11px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.emp-card-top{display:flex;align-items:center;gap:8px;}
+.emp-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.emp-nm{font-size:12px;font-weight:700;color:var(--navy);}.emp-dp{font-size:10px;color:var(--muted);}
 .emp-info{flex:1;min-width:0;}.emp-actions{display:flex;gap:3px;}
-.icon-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .14s;color:var(--muted);}
+.icon-btn{width:24px;height:24px;border-radius:5px;border:1px solid var(--bdr);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .14s;color:var(--muted);}
 .icon-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
 .icon-btn.del:hover{background:#C0392B;color:#fff;border-color:#C0392B;}
-.filter-bar{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;align-items:center;}
+.emp-leave{background:var(--bg);border-radius:7px;padding:6px 8px;}
+.emp-leave-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.emp-leave-lbl{font-size:10px;font-weight:700;color:var(--slate);}
+.emp-leave-val{font-size:12px;font-weight:800;color:var(--navy);}
+.emp-leave-sub{font-size:10px;color:var(--muted);}
+.emp-bar{height:5px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.emp-bar-fill{height:100%;border-radius:3px;transition:width .4s;}
+.emp-leave-detail{font-size:10px;color:var(--muted);}
+
+.emp-right{display:flex;flex-direction:column;gap:6px;overflow:hidden;}
+.emp-right-hdr{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+.filter-bar{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
 .flbl{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.5px;}
-.fbtn{padding:4px 11px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--sur);cursor:pointer;font-size:11px;font-weight:600;transition:all .13s;color:var(--muted);}
+.fbtn{padding:3px 9px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--sur);cursor:pointer;font-size:10px;font-weight:600;transition:all .13s;color:var(--muted);}
 .fbtn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
 .fbtn:hover:not(.active){background:rgba(13,28,63,.07);color:var(--navy);border-color:var(--navy);}
-.vac-scroll{flex:1;overflow-y:auto;min-height:0;border-radius:10px;box-shadow:0 2px 8px rgba(13,28,63,.07);}
+.vac-scroll{flex:1;overflow-y:auto;min-height:0;border-radius:10px;}
 .vac-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:auto;}
-.vac-table th{font-size:11px;font-weight:800;color:#fff;letter-spacing:.5px;text-transform:uppercase;padding:7px 8px;background:var(--navy);position:sticky;top:0;z-index:10;text-align:left;white-space:nowrap;}
-.vac-table td{padding:5px 8px;font-size:12px;border-bottom:1px solid var(--bdr);vertical-align:middle;white-space:nowrap;}
+.vac-table th{font-size:10px;font-weight:800;color:#fff;letter-spacing:.5px;text-transform:uppercase;padding:7px 8px;background:var(--navy);position:sticky;top:0;z-index:10;text-align:left;white-space:nowrap;}
+.vac-table td{padding:5px 8px;font-size:11px;border-bottom:1px solid var(--bdr);vertical-align:middle;white-space:nowrap;}
 .vac-table tr:last-child td{border-bottom:none;}.vac-table tr:hover td{background:#F9F8F6;}
 .vac-table tbody{background:var(--sur);}
-.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;}
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;}
 .t-연차{background:#DBEAFE;color:#1D4ED8;}.t-반차오전{background:#FEF3C7;color:#92400E;}.t-반차오후{background:#FED7AA;color:#9A3412;}
 .t-병가{background:#FCE7F3;color:#9D174D;}.t-경조사{background:#D1FAE5;color:#065F46;}.t-기타{background:#F0EDE8;color:#4A5568;}
 .t-완료{background:#F3F4F6;color:#9CA3AF;}
-.sec-lbl{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.5px;color:var(--navy);flex-shrink:0;}
+
+/* ── MODAL ── */
 .mo-ov{position:fixed;inset:0;background:rgba(13,28,63,.42);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;backdrop-filter:blur(5px);}
 .mo-ov.show{display:flex;}
-.mo-box{background:#fff;border-radius:18px;padding:26px;width:470px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(13,28,63,.22);animation:moIn .2s ease;}
+.mo-box{background:#fff;border-radius:16px;padding:24px;width:460px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(13,28,63,.22);animation:moIn .2s ease;}
 @keyframes moIn{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:none;}}
-.mo-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.5px;margin-bottom:18px;color:var(--navy);}
+.mo-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.5px;margin-bottom:16px;color:var(--navy);}
 .mo-box label{display:block;font-size:10px;font-weight:800;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.7px;}
-.mo-inp{width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--navy);background:#fff;margin-bottom:12px;outline:none;transition:border-color .15s;}
+.mo-inp{width:100%;padding:8px 11px;border:1.5px solid var(--bdr);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--navy);background:#fff;margin-bottom:11px;outline:none;transition:border-color .15s;}
 .mo-inp:focus{border-color:var(--navy);}
 .mo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .mo-acts{display:flex;gap:8px;margin-top:4px;}
 .mo-acts .btn{flex:1;padding:10px;font-size:13px;border-radius:10px;}
-#rich-tip{position:fixed;z-index:99999;background:var(--navy);color:#fff;border-radius:12px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;line-height:1.65;white-space:nowrap;box-shadow:0 8px 32px rgba(13,28,63,.35);pointer-events:none;opacity:0;transition:opacity .15s;border:1px solid rgba(255,255,255,.12);}
+/* ── TOOLTIP ── */
+#rich-tip{position:fixed;z-index:99999;background:var(--navy);color:#fff;border-radius:12px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;line-height:1.6;white-space:nowrap;box-shadow:0 8px 32px rgba(13,28,63,.35);pointer-events:none;opacity:0;transition:opacity .15s;border:1px solid rgba(255,255,255,.12);}
 #rich-tip.visible{opacity:1;}
-#rich-tip .tip-name{font-size:16px;font-weight:800;margin-bottom:3px;}
-#rich-tip .tip-date{font-size:12px;color:rgba(255,255,255,.6);font-weight:500;}
+#rich-tip .tip-name{font-size:15px;font-weight:800;margin-bottom:2px;}
+#rich-tip .tip-date{font-size:11px;color:rgba(255,255,255,.6);font-weight:500;}
 </style>
-</head>
-<body>
-
 <!-- ══════════════════════ LOGIN SCREEN ══════════════════════ -->
 <div id="login-screen">
   <div class="login-left">
@@ -449,6 +533,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
 <!-- ══════════════════════ MAIN APP ══════════════════════ -->
 <div class="app">
+
+<!-- HEADER -->
 <div class="hdr">
   <div class="hdr-l">
     <div class="hdr-icon">📅</div>
@@ -462,26 +548,43 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <button class="btn btn-p" onclick="openVacMo(null,null)">+ 휴가 등록</button>
   </div>
 </div>
+
+<!-- TABS -->
 <div class="tabs">
   <button class="tab active" id="tab-month" onclick="switchTab('month')">월별 보기</button>
   <button class="tab" id="tab-year" onclick="switchTab('year')">연간 보기</button>
   <button class="tab" id="tab-emp" onclick="switchTab('emp')">직원 관리</button>
 </div>
 
-<!-- MONTH VIEW -->
-<div id="v-month" style="display:flex;flex-direction:column;flex:1;gap:7px;overflow:hidden;min-height:0;">
-  <div id="upcoming-strip" style="flex-shrink:0;"></div>
-  <div class="drag-hint">날짜를 드래그해서 휴가를 바로 등록할 수 있어요</div>
-  <div class="stat-bar" id="stats"></div>
-  <div class="month-nav">
-    <div class="month-title" id="mo-title"></div>
-    <div class="nav-center">
-      <button class="nav-btn" onclick="goToday()" style="width:auto;padding:0 10px;font-size:11px;font-weight:700;">TODAY</button>
-      <button class="nav-btn" onclick="chMo(-1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <button class="nav-btn" onclick="chMo(1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<!-- ════ MONTH VIEW — 2-column grid ════ -->
+<div id="v-month" style="display:grid;">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="month-sidebar">
+    <div class="sidebar-top">
+      <div class="month-title" id="mo-title"></div>
+      <div class="nav-grp">
+        <button class="nav-btn today-btn" onclick="goToday()">TODAY</button>
+        <button class="nav-btn" onclick="chMo(-1)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="nav-btn" onclick="chMo(1)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
     </div>
-    <div class="nav-right"><div class="legend" id="legend" style="margin:0;padding:5px 9px;"></div></div>
+
+    <div class="stat-grid" id="stats"></div>
+
+    <div class="drag-hint">드래그로 날짜 선택 → 휴가 등록</div>
+
+    <!-- Upcoming -->
+    <div class="upcoming-box" id="upcoming-strip"></div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-title">직원</div>
+      <div id="legend-inner"></div>
+    </div>
   </div>
+
+  <!-- RIGHT CALENDAR -->
   <div class="cal-outer">
     <div class="cal-wrap">
       <div class="cal-head" id="cal-head"></div>
@@ -493,55 +596,70 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
-<!-- YEAR VIEW -->
-<div id="v-year" style="display:none;flex-direction:column;flex:1;gap:7px;overflow:hidden;min-height:0;">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;max-width:var(--cal-max-w,1200px);width:100%;">
+<!-- ════ YEAR VIEW ════ -->
+<div id="v-year" style="display:none;">
+  <div class="year-top">
     <div class="year-title-txt" id="yr-title"></div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <div class="q-tabs">
-        <button class="qtab active" onclick="setQ(1,this)">Q1 · 1~3월</button>
-        <button class="qtab" onclick="setQ(2,this)">Q2 · 4~6월</button>
-        <button class="qtab" onclick="setQ(3,this)">Q3 · 7~9월</button>
-        <button class="qtab" onclick="setQ(4,this)">Q4 · 10~12월</button>
-      </div>
-      <button class="nav-btn" onclick="chYear(-1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <button class="nav-btn" onclick="chYear(1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="q-tabs">
+      <button class="qtab active" onclick="setQ(1,this)">Q1 · 1~3월</button>
+      <button class="qtab" onclick="setQ(2,this)">Q2 · 4~6월</button>
+      <button class="qtab" onclick="setQ(3,this)">Q3 · 7~9월</button>
+      <button class="qtab" onclick="setQ(4,this)">Q4 · 10~12월</button>
+    </div>
+    <div class="year-nav-grp">
+      <button class="nav-btn" onclick="chYear(-1)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="nav-btn" onclick="chYear(1)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#0D1C3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
   </div>
-  <div class="legend" id="legend-yr" style="flex-shrink:0;padding:7px 11px;max-width:var(--cal-max-w,1200px);width:100%;"></div>
-  <div class="tl-outer" id="tl-outer-el"><div class="tl-wrap" id="tl-wrap"></div></div>
+  <div class="yr-legend" id="legend-yr"></div>
+  <div class="tl-outer">
+    <div class="tl-wrap">
+      <div class="tl-col-head" id="tl-col-head"></div>
+      <div class="tl-body" id="tl-body"></div>
+    </div>
+  </div>
 </div>
 
-<!-- EMP VIEW -->
-<div id="v-emp" style="display:none;flex-direction:column;flex:1;gap:7px;overflow:hidden;min-height:0;">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-    <div class="sec-lbl">직원 목록</div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span style="font-size:12px;font-weight:600;color:var(--muted);">연간 기본 연차</span>
-      <button class="icon-btn" onclick="changeAnnualDays()" id="annual-btn" style="width:auto;padding:4px 10px;font-size:12px;font-weight:700;color:var(--navy);border-radius:7px;"></button>
+<!-- ════ EMP VIEW — 2-column grid ════ -->
+<div id="v-emp" style="display:none;">
+
+  <!-- LEFT: employee cards -->
+  <div class="emp-left">
+    <div class="emp-left-hdr">
+      <div class="sec-lbl">직원 목록</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;font-weight:600;color:var(--muted);">기본 연차</span>
+        <button class="icon-btn" onclick="changeAnnualDays()" id="annual-btn" style="width:auto;padding:3px 8px;font-size:11px;font-weight:700;color:var(--navy);"></button>
+      </div>
+    </div>
+    <div class="emp-scroll" id="emp-grid"></div>
+  </div>
+
+  <!-- RIGHT: vacation table -->
+  <div class="emp-right">
+    <div class="emp-right-hdr">
+      <div class="sec-lbl">휴가 목록</div>
+      <div class="filter-bar">
+        <button class="fbtn active" onclick="setFilter('all',this)">전체</button>
+        <button class="fbtn" onclick="setFilter('연차',this)">연차</button>
+        <button class="fbtn" onclick="setFilter('반차오전',this)">오전반차</button>
+        <button class="fbtn" onclick="setFilter('반차오후',this)">오후반차</button>
+        <button class="fbtn" onclick="setFilter('병가',this)">병가</button>
+        <button class="fbtn" onclick="setFilter('경조사',this)">경조사</button>
+        <button class="fbtn" onclick="setFilter('기타',this)">기타</button>
+        <button class="fbtn" onclick="setFilter('완료',this)">완료</button>
+        <button class="fbtn" onclick="setFilter('진행',this)">진행중</button>
+      </div>
+    </div>
+    <div class="vac-scroll">
+      <table class="vac-table">
+        <thead><tr><th>직원</th><th>기간</th><th>일수</th><th>구분</th><th>사유/메모</th><th>상태</th><th></th></tr></thead>
+        <tbody id="vac-tbody"></tbody>
+      </table>
     </div>
   </div>
-  <div class="emp-grid" id="emp-grid"></div>
-  <div class="sec-lbl" style="margin-top:2px;">전체 휴가 목록</div>
-  <div class="filter-bar">
-    <span class="flbl">필터</span>
-    <button class="fbtn active" onclick="setFilter('all',this)">전체</button>
-    <button class="fbtn" onclick="setFilter('연차',this)">연차</button>
-    <button class="fbtn" onclick="setFilter('반차오전',this)">오전 반차</button>
-    <button class="fbtn" onclick="setFilter('반차오후',this)">오후 반차</button>
-    <button class="fbtn" onclick="setFilter('병가',this)">병가</button>
-    <button class="fbtn" onclick="setFilter('경조사',this)">경조사</button>
-    <button class="fbtn" onclick="setFilter('기타',this)">기타</button>
-    <button class="fbtn" onclick="setFilter('완료',this)">완료</button>
-    <button class="fbtn" onclick="setFilter('진행',this)">진행중</button>
-  </div>
-  <div class="vac-scroll">
-    <table class="vac-table">
-      <thead><tr><th>직원</th><th>기간</th><th>일수</th><th>구분</th><th>사유/메모</th><th>상태</th><th></th></tr></thead>
-      <tbody id="vac-tbody"></tbody>
-    </table>
-  </div>
 </div>
+
 </div><!-- .app -->
 
 <!-- MODALS -->
@@ -572,8 +690,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <option value="반차오후">반차 (오후)</option><option value="병가">병가</option>
       <option value="경조사">경조사</option><option value="기타">기타</option>
     </select>
-    <label>사유 <small style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted)">(자유입력 · 선택)</small></label>
-    <input class="mo-inp" id="vreason" placeholder="예: 가족여행, 건강검진, 개인 용무 등"/>
+    <label>사유 <small style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted)">(자유입력)</small></label>
+    <input class="mo-inp" id="vreason" placeholder="예: 가족여행, 건강검진 등"/>
     <label>메모 <small style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted)">(선택)</small></label>
     <input class="mo-inp" id="vmemo" placeholder="추가 메모"/>
     <div class="mo-acts">
@@ -582,8 +700,53 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
   </div>
 </div>
+<!-- Admin panel -->
+<div id="admin-panel" onclick="if(event.target===this)closePnl()">
+  <div class="admin-box">
+    <div class="admin-title">관리자 패널</div>
+    <div id="admin-user-list"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bdr);">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">새 계정 추가</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div><label style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:3px;">직원 ID</label>
+        <input class="mo-inp" id="new-uid" placeholder="예: hong" style="margin:0;"/></div>
+        <div><label style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:3px;">초기 비밀번호</label>
+        <input class="mo-inp" id="new-upw" placeholder="1234" style="margin:0;"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div><label style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:3px;">연결 직원</label>
+        <select class="mo-inp" id="new-uemp" style="margin:0;"></select></div>
+        <div><label style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:3px;">권한</label>
+        <select class="mo-inp" id="new-urole" style="margin:0;"><option value="user">일반 직원</option><option value="admin">관리자</option></select></div>
+      </div>
+      <button class="btn btn-p" onclick="addUser()" style="width:100%;padding:9px;font-size:13px;">계정 추가</button>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bdr);">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">내 비밀번호 변경</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><label style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:3px;">새 비밀번호</label>
+        <input class="mo-inp" id="chpw1" type="password" placeholder="새 비밀번호" style="margin:0;"/></div>
+        <div><label style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:3px;">확인</label>
+        <input class="mo-inp" id="chpw2" type="password" placeholder="확인" style="margin:0;"/></div>
+      </div>
+      <button class="btn btn-navy" onclick="changePw()" style="width:100%;padding:8px;font-size:12px;margin-top:8px;">비밀번호 변경</button>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bdr);">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;">📦 데이터 백업 / 복구</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">월 1회 백업을 권장해요.</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-navy" onclick="downloadBackup()" style="flex:1;padding:8px;font-size:11px;">💾 백업 다운로드</button>
+        <button class="btn" onclick="document.getElementById('restore-file').click()" style="flex:1;padding:8px;font-size:11px;background:#F0EDE8;color:var(--navy);">📂 백업 복구</button>
+      </div>
+      <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreBackup(this)"/>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-cancel" onclick="closePnl()" style="flex:1;padding:9px;">닫기</button>
+      <button class="btn btn-danger" onclick="doLogout()" style="flex:1;padding:9px;">로그아웃</button>
+    </div>
+  </div>
+</div>
 <div id="rich-tip"></div>
-
 <script>
 // ══════════════════════════════════════
 //  CONSTANTS & STATE
@@ -863,7 +1026,7 @@ function assignSlots(cells,vacs){
 //  MONTH CALENDAR
 // ══════════════════════════════════════
 const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const BAR_TOP_BASE=28,BAR_H=13,BAR_GAP=2,MAX_SLOTS=8;
+const BAR_TOP_BASE=24,BAR_H=8,BAR_GAP=2,MAX_SLOTS=12;
 
 function buildMonthCells(y,m){
   const sd=new Date(y,m,1).getDay();
@@ -896,9 +1059,9 @@ function renderMonth(){
     <div class="stat-card"><div class="stat-icon" style="background:#FEE2E2">📋</div><div><div class="stat-num">${mv.length}</div><div class="stat-lbl">이번 달 휴가</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#DBEAFE">👤</div><div><div class="stat-num">${ue}</div><div class="stat-lbl">휴가 중인 직원</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#FEF9C3">☀</div><div><div class="stat-num">${amC}</div><div class="stat-lbl">오전 반차</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#FEF3C7">🌙</div><div><div class="stat-num">${pmC}</div><div class="stat-lbl">오후 반차</div></div></div>`;
+    <div class="stat-card"><div class="stat-icon" style="background:#FEF3C7">🌙</div><div><div class="stat-num">${pmC}</div><div class="stat-lbl">오후 반차</div></div></div>`; 
 
-  document.getElementById('legend').innerHTML=S.employees.map((e,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${e.name}</div>`).join('');
+  document.getElementById('legend-inner').innerHTML=S.employees.map((e,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${e.name}</div>`).join('');
 
   // Upcoming strip
   const in14=new Date(_today.getTime()+14*86400000);
@@ -906,8 +1069,8 @@ function renderMonth(){
   const upEl=document.getElementById('upcoming-strip');
   if(upEl&&ups.length){
     const pills=ups.map(v=>{const emp=S.employees.find(e=>e.id===v.empId);const i=S.employees.indexOf(emp);const col=COLORS[i%COLORS.length];return`<span style="display:inline-flex;align-items:center;gap:4px;background:${col}22;color:${col};border:1px solid ${col}55;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;">${emp?emp.name:'?'} ${fmtKo(v.start)}${v.start!==v.end?' ~ '+fmtKo(v.end):''}</span>`;}).join('');
-    upEl.innerHTML=`<div style="display:flex;gap:6px;align-items:center;padding:5px 12px;background:#fff;border-radius:9px;border:1px solid var(--bdr);overflow-x:auto;"><span style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;margin-right:2px;">다가오는 휴가 (14일)</span>${pills}</div>`;
-  } else if(upEl) upEl.innerHTML='';
+    upEl.innerHTML=`<div class="upcoming-title">다가오는 휴가 (14일)</div>${ups.map(v=>{const emp=S.employees.find(e=>e.id===v.empId);const i=S.employees.indexOf(emp);const col=COLORS[i%COLORS.length];return`<div class="up-pill"><div class="up-dot" style="background:${col}"></div><span style="color:${col}">${emp?emp.name:'?'}</span> <span style="color:var(--muted)">${fmtKo(v.start)}${v.start!==v.end?' ~ '+fmtKo(v.end):''}</span></div>`;}).join('')}`;
+  } else if(upEl) upEl.innerHTML='<div style="font-size:10px;color:var(--muted);padding:4px 0;">14일 내 예정된 휴가가 없어요</div>';
 
   const cells=buildMonthCells(y,m);
   const numRows=Math.ceil(cells.length/7);
@@ -933,15 +1096,6 @@ function renderMonth(){
   document.getElementById('bar-canvas').innerHTML='';
 
   requestAnimationFrame(()=>{
-    const outerEl=document.getElementById('cal-body-wrap');
-    const outerH=outerEl.getBoundingClientRect().height;
-    const cellH=outerH/numRows;
-    const calW=cellH*7;
-    const calWrap=document.querySelector('.cal-wrap');
-    const availW=document.querySelector('.cal-outer').getBoundingClientRect().width;
-    const finalW=Math.min(calW,availW);
-    calWrap.style.maxWidth=finalW+'px';
-    document.documentElement.style.setProperty('--cal-max-w',finalW+'px');
     drawMonthBars(cells,fullVacs,vacSlot,halfVacs);
   });
 }
@@ -1030,7 +1184,7 @@ window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setT
 // ══════════════════════════════════════
 const MN_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MN_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-const TL_BAR_H=13,TL_BAR_GAP=3,MAX_TL=8,TL_BAR_TOP=24,TL_ROW_MIN=200;
+const TL_BAR_H=9,TL_BAR_GAP=2,MAX_TL=12,TL_BAR_TOP=20;
 
 function setQ(q,btn){curQ=q;document.querySelectorAll('.qtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderYear();}
 
@@ -1041,9 +1195,10 @@ function renderYear(){
   const qS=(curQ-1)*3,months=[qS,qS+1,qS+2];
   const maxDim=Math.max(...months.map(m=>new Date(y,m+1,0).getDate()));
   const ts=TS;
-  let html=`<div class="tl-col-head"><div class="tl-lbl-head">월</div><div class="tl-days-head">`;
-  for(let d=1;d<=maxDim;d++){let cls='';for(const m of months){if(d<=new Date(y,m+1,0).getDate()){const dow=new Date(y,m,d).getDay();cls=dow===0?'dhc-sun':dow===6?'dhc-sat':'';break;}}const isTod=months.some(m=>d<=new Date(y,m+1,0).getDate()&&dsFn(y,m,d)===ts);html+=`<div class="tl-dhc ${cls}${isTod?' dhc-today':''}">${d}</div>`;}
-  html+=`</div></div>`;
+  let colHeadHtml=`<div class="tl-lbl-head">월</div><div class="tl-days-head">`;
+  for(let d=1;d<=maxDim;d++){let cls='';for(const m of months){if(d<=new Date(y,m+1,0).getDate()){const dow=new Date(y,m,d).getDay();cls=dow===0?'dhc-sun':dow===6?'dhc-sat':'';break;}}const isTod=months.some(m=>d<=new Date(y,m+1,0).getDate()&&dsFn(y,m,d)===ts);colHeadHtml+=`<div class="tl-dhc ${cls}${isTod?' dhc-today':''}">${d}</div>`;}
+  colHeadHtml+=`</div>`;
+  let bodyHtml='',html='';
   months.forEach(m=>{
     const dim=new Date(y,m+1,0).getDate();
     const ms=`${y}-${String(m+1).padStart(2,'0')}`;
@@ -1054,12 +1209,13 @@ function renderYear(){
     const sm={};rowCells.filter(c=>!c.other).forEach(c=>{sm[c.i]=[];});const vs={};
     [...mVacs].sort((a,b)=>a.start<b.start?-1:1).forEach(v=>{const t=rowCells.filter(c=>!c.other&&c.d>=v.start&&c.d<=v.end).map(c=>c.i);if(!t.length)return;let slot=0;while(t.some(i=>sm[i]&&sm[i][slot]!==undefined)){slot++;}t.forEach(i=>{if(sm[i])sm[i][slot]=v.id;});vs[v.id]=slot;});
     const maxSl=Object.values(vs).length?Math.max(...Object.values(vs))+1:0;
-    const rowH=Math.max(TL_ROW_MIN,TL_BAR_TOP+maxSl*(TL_BAR_H+TL_BAR_GAP)+(mHalf.length>0?18:6)+4);
-    html+=`<div class="tl-month-row" id="tlrow-wrap-${m}" style="min-height:${rowH}px;"><div class="tl-row-lbl"><div class="tl-lbl-en">${MN_SHORT[m]}</div><div class="tl-lbl-ko">${MN_KO[m]}</div></div><div class="tl-row-days" id="tlrow-${m}">`;
-    rowCells.forEach(rc=>{if(rc.other){html+=`<div class="tl-dc tl-empty" style="min-height:${rowH}px;flex:1;"></div>`;}else{let cls='tl-dc'+(rc.isSun?' tl-sun':rc.isSat?' tl-sat':'')+(rc.isTod?' tl-today':'');html+=`<div class="${cls}" id="tl-${m}-${rc.day}" data-date="${rc.d}" style="min-height:${rowH}px;" onmousedown="tDS(event,'${rc.d}')" onmouseover="tDM(event,'${rc.d}')" onmouseup="tDE(event,'${rc.d}')"><div class="tl-dnum${rc.isSun?' tn-sun':rc.isSat?' tn-sat':''}${rc.isTod?' tn-today':''}">${rc.day}</div><div id="tlb-${m}-${rc.day}"></div></div>`;}});
-    html+=`</div></div>`;
+    const rowH=null;// height managed by flex
+    bodyHtml+=`<div class="tl-month-row" id="tlrow-wrap-${m}"><div class="tl-row-lbl"><div class="tl-lbl-en">${MN_SHORT[m]}</div><div class="tl-lbl-ko">${MN_KO[m]}</div></div><div class="tl-row-days" id="tlrow-${m}">`;
+    rowCells.forEach(rc=>{if(rc.other){bodyHtml+=`<div class="tl-dc tl-empty" style="flex:1;"></div>`;}else{let cls='tl-dc'+(rc.isSun?' tl-sun':rc.isSat?' tl-sat':'')+(rc.isTod?' tl-today':'');bodyHtml+=`<div class="${cls}" id="tl-${m}-${rc.day}" data-date="${rc.d}" onmousedown="tDS(event,'${rc.d}')" onmouseover="tDM(event,'${rc.d}')" onmouseup="tDE(event,'${rc.d}')"><div class="tl-dnum${rc.isSun?' tn-sun':rc.isSat?' tn-sat':''}${rc.isTod?' tn-today':''}">${rc.day}</div><div id="tlb-${m}-${rc.day}"></div></div>`;}});
+    bodyHtml+=`</div></div>`;
   });
-  document.getElementById('tl-wrap').innerHTML=html;
+  document.getElementById('tl-col-head').innerHTML=colHeadHtml;
+  document.getElementById('tl-body').innerHTML=bodyHtml;
   requestAnimationFrame(()=>{months.forEach(m=>drawTLBars(y,m));});
 }
 
@@ -1312,6 +1468,5 @@ async function startup(){
 window.addEventListener('firebase-ready',()=>startup());
 // Fallback: if module already loaded
 if(window.DB)startup();
-</script>
-</body>
+</script></body>
 </html>
