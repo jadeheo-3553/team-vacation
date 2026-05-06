@@ -1738,12 +1738,33 @@ function openVacMo(s,e){
   document.getElementById('vac-eid').value='';
   document.getElementById('vs').innerHTML=S.employees.length
     ? S.employees.map(emp=>`<option value="${emp.id}">${emp.name} (${emp.dept})</option>`).join('')
-    : '<option value="">직원을 먼저 추가해주세요</option>';document.getElementById('v1').value=s||dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());document.getElementById('v2').value=e||dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());document.getElementById('vt').value='연차';document.getElementById('vreason').value='';document.getElementById('vac-mo').classList.add('show');}
+    : '<option value="">직원을 먼저 추가해주세요</option>';
+  document.getElementById('v1').value=s||dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());
+  document.getElementById('v2').value=e||dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());
+  document.getElementById('vt').value='연차';
+  document.getElementById('vreason').value='';
+  // 새 등록: 삭제 버튼 숨김
+  const _dr=document.getElementById('vac-del-row');if(_dr)_dr.style.display='none';
+  document.getElementById('vac-mo').classList.add('show');
+}
 function openVacEdit(id){
   const v=S.vacations.find(x=>x.id===id);if(!v)return;
-  if(currentUser.role!=='admin'&&currentUser.empId&&v.empId!==currentUser.empId){alert('본인 휴가만 수정할 수 있습니다.');return;}
-  document.getElementById('vac-mo-title').textContent='휴가 수정';document.getElementById('vac-eid').value=id;document.getElementById('vs').innerHTML=S.employees.map(emp=>`<option value="${emp.id}"${emp.id===v.empId?' selected':''}>${emp.name} (${emp.dept})</option>`).join('');document.getElementById('v1').value=v.start;document.getElementById('v2').value=v.end;document.getElementById('vt').value=v.type;document.getElementById('vreason').value=v.reason||'';if(document.getElementById('vmemo'))document.getElementById('vmemo').value=v.memo||'';document.getElementById('vac-mo').classList.add('show');
+  if(currentUser&&currentUser.role!=='admin'&&currentUser.empId&&v.empId!==currentUser.empId){
+    alert('본인 휴가만 수정할 수 있습니다.');return;
+  }
+  document.getElementById('vac-mo-title').textContent='휴가 수정';
+  document.getElementById('vac-eid').value=id;
+  document.getElementById('vs').innerHTML=S.employees.map(emp=>`<option value="${emp.id}"${emp.id===v.empId?' selected':''}>${emp.name} (${emp.dept})</option>`).join('');
+  document.getElementById('v1').value=v.start;
+  document.getElementById('v2').value=v.end;
+  document.getElementById('vt').value=v.type;
+  document.getElementById('vreason').value=v.reason||'';
+  // 수정 모달: 삭제 버튼 표시
+  const delRow=document.getElementById('vac-del-row');
+  if(delRow)delRow.style.display='block';
+  document.getElementById('vac-mo').classList.add('show');
 }
+
 function saveVac(){
   if(!currentUser){alert('로그인이 필요합니다.');return;}
   const empId=+document.getElementById('vs').value;
@@ -1760,11 +1781,16 @@ function saveVac(){
 function closeMo(id){document.getElementById(id).classList.remove('show');}
 function delVacFromModal(){
   const eid=document.getElementById('vac-eid').value;
-  if(!eid)return;
+  if(!eid){alert('삭제할 휴가가 선택되지 않았습니다.');return;}
   const v=S.vacations.find(x=>x.id===+eid);
-  if(!v)return;
+  if(!v){alert('휴가 정보를 찾을 수 없습니다.');return;}
+  // 권한 체크
+  if(currentUser&&currentUser.role!=='admin'&&currentUser.empId&&v.empId!==currentUser.empId){
+    alert('본인 휴가만 삭제할 수 있습니다.');return;
+  }
   const emp=S.employees.find(e=>e.id===v.empId);
-  if(!confirm(`${emp?emp.name:''}의 휴가를 삭제할까요?\n${v.start} ~ ${v.end} (${tagLbl(v.type)})`))return;
+  const msg=`${emp?emp.name:''}의 휴가를 삭제할까요?\n기간: ${v.start} ~ ${v.end}\n구분: ${tagLbl(v.type)}`;
+  if(!confirm(msg))return;
   closeMo('vac-mo');
   delVac(+eid);
 }
