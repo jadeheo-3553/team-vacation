@@ -394,7 +394,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .vac-table tr:last-child td{border-bottom:none;}.vac-table tr:hover td{background:#F9F8F6;}
 .vac-table tbody{background:var(--sur);}
 .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
-.t-연차{background:#DBEAFE;color:#1D4ED8;}.t-반차오전{background:#FEF3C7;color:#92400E;}.t-반차오후{background:#FED7AA;color:#9A3412;}
+.t-연차{background:#DBEAFE;color:#1D4ED8;}.t-반차오전{background:#FFF3B0;color:#B45309;border:1px solid #F59E0B;}.t-반차오후{background:#EDE9FE;color:#5B21B6;border:1px solid #7C3AED;}
 .t-병가{background:#FCE7F3;color:#9D174D;}.t-경조사{background:#D1FAE5;color:#065F46;}.t-기타{background:#F0EDE8;color:#4A5568;}
 .t-완료{background:#F3F4F6;color:#9CA3AF;}
 .t-개인사정{background:#EDE9FE;color:#5B21B6;}
@@ -665,7 +665,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         </select>
       </div>
     </div>
-    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 260px;gap:8px;overflow:hidden;">
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:55% 1fr;gap:10px;overflow:hidden;">
       <div class="vac-scroll">
       <table class="vac-table">
         <colgroup>
@@ -797,6 +797,16 @@ function gc(id){const i=S.employees.findIndex(e=>e.id===id);return i>=0?COLORS[i
 function fmtKo(s){const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`;}
 function daysBetween(s,e){return Math.round((pd(e)-pd(s))/86400000)+1;}
 function isEnded(v){return pd(v.end)<_today;}
+const TITLES=['회장','부회장','사장','부사장','전무','상무','이사','부장','차장','과장','대리','팀장','실장','본부장','주임','사원','원장','소장','수석','책임','선임','연구원'];
+function shortName(name){
+  // Remove trailing title (e.g. "홍길동 이사" → "홍길동")
+  if(!name)return name;
+  for(const t of TITLES){
+    if(name.endsWith(' '+t))return name.slice(0,-(t.length+1));
+    if(name.endsWith(t)&&name.length>t.length)return name.slice(0,-t.length);
+  }
+  return name;
+}
 function tagLbl(t){return{연차:'연차',반차오전:'반차(오전)',반차오후:'반차(오후)',병가:'병가',경조사:'경조사',개인사정:'개인사정',병원진료:'병원진료',여행:'여행',이사:'이사',휴식:'휴식',기타:'기타'}[t]||t;}
 function tagCls(t){return{연차:'t-연차',반차오전:'t-반차오전',반차오후:'t-반차오후',병가:'t-병가',경조사:'t-경조사',개인사정:'t-개인사정',병원진료:'t-병원진료',여행:'t-여행',이사:'t-이사',휴식:'t-휴식',기타:'t-기타'}[t]||'t-기타';}
 function calcLeave(empId){
@@ -1087,8 +1097,8 @@ function renderMonth(){
   document.getElementById('stats').innerHTML=`
     <div class="stat-card"><div class="stat-icon" style="background:#FEE2E2">📋</div><div><div class="stat-num">${mv.length}</div><div class="stat-lbl">이번 달<br>휴가</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#DBEAFE">👤</div><div><div class="stat-num">${ue}</div><div class="stat-lbl">휴가 중인<br>직원</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#FEF9C3">☀</div><div><div class="stat-num">${amC}</div><div class="stat-lbl">오전<br>반차</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#FEF3C7">🌙</div><div><div class="stat-num">${pmC}</div><div class="stat-lbl">오후<br>반차</div></div></div>`; 
+    <div class="stat-card"><div class="stat-icon" style="background:#FFF3B0">☀</div><div><div class="stat-num">${amC}</div><div class="stat-lbl">오전<br>반차</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#EDE9FE">🌙</div><div><div class="stat-num">${pmC}</div><div class="stat-lbl">오후<br>반차</div></div></div>`; 
 
   document.getElementById('legend-inner').innerHTML=S.employees.map((e,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${e.name}</div>`).join('');
 
@@ -1184,11 +1194,11 @@ function drawMonthBars(cells,fullVacs,vacSlot,halfVacs){
     const cel=cellEls[cell.i];if(!cel)return;
     const cr=cel.rect,baseX=cr.left-wrapRect.left,baseY=cr.top-wrapRect.top;
     const chipH=17,chipY=baseY+cr.height-chipH-2,halfW=Math.floor(cr.width/2)-2;
-    if(am.length===1){const v=am[0];const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);barsHtml+=`<div class="bc-bar" style="left:${baseX+1}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:${ended?'#E8E8E8':'#FEF9C3'};border-top:2px solid ${ended?'#BBB':'#CA8A04'};border-radius:4px 0 0 0;padding-left:3px;color:${ended?'#999':'#854D0E'};font-size:8px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||오전 반차${v.reason?' · '+v.reason:''}||${v.start}"><span style="pointer-events:none">☀ ${emp.name}${ended?' ✓':''}</span></div>`;}
-    else if(am.length>1){const names=am.map(v=>{const e=S.employees.find(x=>x.id===v.empId);return e?e.name:'?';}).join(', ');barsHtml+=`<div class="bc-bar" style="left:${baseX+1}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:#FEF9C3;border-top:2px solid #CA8A04;border-radius:4px 0 0 0;padding-left:3px;color:#854D0E;font-size:8px;cursor:pointer;" onclick="showHalfPopup(event,'오전 반차','${names}')" data-tip="오전 반차 ${am.length}명||${names}||"><span style="pointer-events:none">☀ ${am.length}명</span></div>`;}
+    if(am.length===1){const v=am[0];const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);barsHtml+=`<div class="bc-bar" style="left:${baseX+1}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:${ended?'#E8E8E8':'#FFF3B0'};border-top:3px solid ${ended?'#BBB':'#F59E0B'};border-radius:4px 0 0 0;padding-left:3px;color:${ended?'#999':'#B45309'};font-size:8px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||오전 반차${v.reason?' · '+v.reason:''}||${v.start}"><span style="pointer-events:none">☀ ${emp.name}${ended?' ✓':''}</span></div>`;}
+    else if(am.length>1){const names=am.map(v=>{const e=S.employees.find(x=>x.id===v.empId);return e?e.name:'?';}).join(', ');barsHtml+=`<div class="bc-bar" style="left:${baseX+1}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:#FFF3B0;border-top:3px solid #F59E0B;border-radius:4px 0 0 0;padding-left:3px;color:#B45309;font-size:8px;cursor:pointer;" onclick="showHalfPopup(event,'오전 반차','${names}')" data-tip="오전 반차 ${am.length}명||${names}||"><span style="pointer-events:none">☀ ${am.length}명</span></div>`;}
     const pmX=baseX+cr.width/2+1;
-    if(pm.length===1){const v=pm[0];const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);barsHtml+=`<div class="bc-bar" style="left:${pmX}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:${ended?'#E8E8E8':'#FEF3C7'};border-top:2px solid ${ended?'#BBB':'#D97706'};border-radius:0 4px 0 0;padding-left:3px;color:${ended?'#999':'#92400E'};font-size:8px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||오후 반차${v.reason?' · '+v.reason:''}||${v.start}"><span style="pointer-events:none">🌙 ${emp.name}${ended?' ✓':''}</span></div>`;}
-    else if(pm.length>1){const names=pm.map(v=>{const e=S.employees.find(x=>x.id===v.empId);return e?e.name:'?';}).join(', ');barsHtml+=`<div class="bc-bar" style="left:${pmX}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:#FEF3C7;border-top:2px solid #D97706;border-radius:0 4px 0 0;padding-left:3px;color:#92400E;font-size:8px;cursor:pointer;" onclick="showHalfPopup(event,'오후 반차','${names}')" data-tip="오후 반차 ${pm.length}명||${names}||"><span style="pointer-events:none">🌙 ${pm.length}명</span></div>`;}
+    if(pm.length===1){const v=pm[0];const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);barsHtml+=`<div class="bc-bar" style="left:${pmX}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:${ended?'#E8E8E8':'#EDE9FE'};border-top:3px solid ${ended?'#BBB':'#7C3AED'};border-radius:0 4px 0 0;padding-left:3px;color:${ended?'#999':'#5B21B6'};font-size:8px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||오후 반차${v.reason?' · '+v.reason:''}||${v.start}"><span style="pointer-events:none">🌙 ${emp.name}${ended?' ✓':''}</span></div>`;}
+    else if(pm.length>1){const names=pm.map(v=>{const e=S.employees.find(x=>x.id===v.empId);return e?e.name:'?';}).join(', ');barsHtml+=`<div class="bc-bar" style="left:${pmX}px;top:${chipY}px;width:${halfW}px;height:${chipH}px;background:#EDE9FE;border-top:3px solid #7C3AED;border-radius:0 4px 0 0;padding-left:3px;color:#5B21B6;font-size:8px;cursor:pointer;" onclick="showHalfPopup(event,'오후 반차','${names}')" data-tip="오후 반차 ${pm.length}명||${names}||"><span style="pointer-events:none">🌙 ${pm.length}명</span></div>`;}
   });
   canvas.innerHTML=barsHtml;
 }
@@ -1327,9 +1337,9 @@ function drawTLBars(y,m){
     const alpha=ended?'1A':'BB',bdCol=ended?col+'55':col,txtCol=ended?'#AAAAAA':'#FFFFFF';
     let borderR='0';if(isL&&isR)borderR='5px';else if(isL)borderR='5px 0 0 5px';else if(isR)borderR='0 5px 5px 0';
     const arrowTip=isR?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${TL_BAR_H/2}px solid transparent;border-bottom:${TL_BAR_H/2}px solid transparent;border-left:5px solid ${col}${alpha};pointer-events:none;"></div>`:'';
-    barsHtml+=`<div class="tl-bc-bar" style="left:${x1}px;top:${barTopY}px;width:${barW}px;height:${TL_BAR_H}px;background:${col}${alpha};border-left:${isL?'2px':'0'} solid ${bdCol};border-radius:${borderR};padding-left:${isL?5:2}px;color:${txtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start} ~ ${v.end}">${isL?`<span style="font-size:12px;font-weight:800;pointer-events:none;">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+    barsHtml+=`<div class="tl-bc-bar" style="left:${x1}px;top:${barTopY}px;width:${barW}px;height:${TL_BAR_H}px;background:${col}${alpha};border-left:${isL?'2px':'0'} solid ${bdCol};border-radius:${borderR};padding-left:${isL?5:2}px;color:${txtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start} ~ ${v.end}">${isL?`<span style="font-size:12px;font-weight:800;pointer-events:none;">${shortName(emp.name)}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
   });
-  mHalf.forEach(v=>{const d=parseInt(v.start.split('-')[2]);const cel=cellEls[d];if(!cel)return;const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);const isAM=v.type==='반차오전';const cr=cel.rect;const x=cr.left-rowRect.left+(isAM?0:cr.width/2);const w=cr.width/2;const rowH=rowEl.getBoundingClientRect().height;barsHtml+=`<div class="tl-bc-bar" style="left:${x}px;top:${rowH-18}px;width:${w}px;height:14px;background:${isAM?'#FEF9C3':'#FEF3C7'};border-top:2px solid ${isAM?'#CA8A04':'#D97706'};border-radius:${isAM?'3px 0 0 3px':'0 3px 3px 0'};padding-left:2px;color:${isAM?'#854D0E':'#92400E'};font-size:7px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start}"><span style="pointer-events:none">${isAM?'☀':'🌙'} ${emp.name}</span></div>`;});
+  mHalf.forEach(v=>{const d=parseInt(v.start.split('-')[2]);const cel=cellEls[d];if(!cel)return;const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);const isAM=v.type==='반차오전';const cr=cel.rect;const x=cr.left-rowRect.left+(isAM?0:cr.width/2);const w=cr.width/2;const rowH=rowEl.getBoundingClientRect().height;barsHtml+=`<div class="tl-bc-bar" style="left:${x}px;top:${rowH-18}px;width:${w}px;height:14px;background:${isAM?'#FFF3B0':'#EDE9FE'};border-top:3px solid ${isAM?'#F59E0B':'#7C3AED'};border-radius:${isAM?'3px 0 0 3px':'0 3px 3px 0'};padding-left:2px;color:${isAM?'#B45309':'#5B21B6'};font-size:7px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start}"><span style="pointer-events:none">${isAM?'☀':'🌙'} ${emp.name}</span></div>`;});
   canvas.innerHTML=barsHtml;
 }
 function tDS(e,d){e.preventDefault();dragOn=true;dragS=d;dragE=d;dragCtx='y';hlDrag();}
@@ -1352,7 +1362,7 @@ function renderEmp(){
     const mv=S.vacations.filter(v=>v.start.slice(0,7)<=cur&&v.end.slice(0,7)>=cur);
     const DOW2=['일','월','화','수','목','금','토'];
     let rows='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:4px;">';
-    DOW2.forEach((d,i)=>rows+=`<div style="text-align:center;font-size:10px;font-weight:800;padding:2px 0;color:${i===0?'var(--red)':i===6?'var(--blue)':'var(--muted)'};">${d}</div>`);
+    DOW2.forEach((d,i)=>rows+=`<div style="text-align:center;font-size:14px;font-weight:800;padding:3px 0;color:${i===0?'var(--red)':i===6?'var(--blue)':'var(--muted)'};">${d}</div>`);
     rows+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;">';
     for(let i=0;i<sd;i++)rows+=`<div></div>`;
     for(let d=1;d<=dim;d++){
@@ -1369,12 +1379,12 @@ function renderEmp(){
       const names=vacs.map(v=>{const emp=S.employees.find(e=>e.id===v.empId);return emp?emp.name:'?';}).join(', ');
       const tip=n>0?`${d}일: ${names}`:`${d}일`;
       rows+=`<div title="${tip}" style="text-align:center;padding:3px 1px;cursor:${n>0?'pointer':'default'};" onclick="${n>0?`showDayPopup(event,'${ds}')`:''}" >
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:${isToday?'15px':n>0?'17px':'13px'};font-weight:900;color:${todayCol};background:${bg};border-radius:${isToday?'50%':'3px'};width:${isToday?'22px':'auto'};height:${isToday?'22px':'auto'};display:inline-flex;align-items:center;justify-content:center;line-height:1;">${d}</div>
-        ${n>0?`<div style="font-size:9px;font-weight:800;color:${n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4'};">${n}명</div>`:'<div style="font-size:9px;">&nbsp;</div>'}
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:${isToday?'22px':n>0?'24px':'18px'};font-weight:900;color:${todayCol};background:${bg};border-radius:${isToday?'50%':'3px'};width:${isToday?'22px':'auto'};height:${isToday?'22px':'auto'};display:inline-flex;align-items:center;justify-content:center;line-height:1;">${d}</div>
+        ${n>0?`<div style="font-size:13px;font-weight:800;color:${n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4'};">${n}명</div>`:'<div style="font-size:9px;">&nbsp;</div>'}
       </div>`;
     }
     rows+='</div>';
-    mcEl.innerHTML=`<div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:6px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}`;
+    mcEl.innerHTML=`<div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:8px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}`;
   }
   // Density chart: how many off per day this month
   const dcEl=document.getElementById('density-chart');
