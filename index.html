@@ -735,6 +735,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <label>사유 <small style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted)">(자유입력)</small></label>
     <input class="mo-inp" id="vreason" placeholder="예: 가족여행, 건강검진 등"/>
 
+    <div id="vac-del-row" style="display:none;margin-top:4px;">
+      <button class="btn btn-danger" onclick="delVacFromModal()" style="width:100%;padding:10px;font-size:13px;">🗑 이 휴가 삭제</button>
+    </div>
     <div class="mo-acts">
       <button class="btn btn-cancel" onclick="closeMo('vac-mo')">취소</button>
       <button class="btn btn-p" onclick="saveVac()">저장</button>
@@ -810,6 +813,84 @@ function gc(id){const i=S.employees.findIndex(e=>e.id===id);return i>=0?COLORS[i
 function fmtKo(s){const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`;}
 function daysBetween(s,e){return Math.round((pd(e)-pd(s))/86400000)+1;}
 function isEnded(v){return pd(v.end)<_today;}
+
+// ── 한국 법정 공휴일 + 대체공휴일 (2024~2026) ──────────────────────────
+// 근거: 공휴일에 관한 법률, 근로자의날 제정에 관한 법률
+// 2026년부터 노동절(5/1), 제헌절(7/17) 추가
+const KR_HOLIDAYS = new Set([
+  // ══ 2024 ══
+  '2024-01-01', // 신정
+  '2024-02-09','2024-02-10','2024-02-11','2024-02-12', // 설날+대체
+  '2024-03-01', // 삼일절
+  '2024-04-10', // 22대 국회의원 선거일 (임시공휴일)
+  '2024-05-01', // 근로자의 날
+  '2024-05-05', // 어린이날
+  '2024-05-06', // 어린이날 대체 (5/5 일요일)
+  '2024-05-15', // 부처님 오신 날
+  '2024-06-06', // 현충일
+  '2024-08-15', // 광복절
+  '2024-09-16','2024-09-17','2024-09-18', // 추석연휴
+  '2024-09-23', // 추석 대체 (9/17 일요일)
+  '2024-10-01', // 국군의 날 (임시공휴일)
+  '2024-10-03', // 개천절
+  '2024-10-09', // 한글날
+  '2024-12-25', // 크리스마스
+
+  // ══ 2025 ══
+  '2025-01-01', // 신정
+  '2025-01-28','2025-01-29','2025-01-30', // 설날연휴
+  '2025-03-01', // 삼일절
+  '2025-05-01', // 근로자의 날
+  '2025-05-05', // 어린이날+부처님오신날 (같은 날)
+  '2025-05-06', // 대체공휴일 (어린이날 겹침)
+  '2025-06-03', // 제21대 대통령 선거일 (임시공휴일)
+  '2025-06-06', // 현충일
+  '2025-08-15', // 광복절
+  '2025-10-05','2025-10-06','2025-10-07', // 추석연휴
+  '2025-10-08', // 추석 대체 (10/5 일요일)
+  '2025-10-03', // 개천절
+  '2025-10-09', // 한글날
+  '2025-12-25', // 크리스마스
+
+  // ══ 2026 ══
+  '2026-01-01', // 신정
+  '2026-02-17','2026-02-18','2026-02-19', // 설날연휴
+  '2026-03-01', // 삼일절
+  '2026-03-02', // 삼일절 대체 (3/1 일요일)
+  '2026-05-01', // 노동절 (2026년부터 법정공휴일)
+  '2026-05-05', // 어린이날
+  '2026-05-24', // 부처님 오신 날
+  '2026-05-25', // 부처님 오신 날 대체 (5/24 일요일)
+  '2026-06-06', // 현충일
+  '2026-07-17', // 제헌절 (2026년 재지정)
+  '2026-08-15', // 광복절
+  '2026-08-17', // 광복절 대체 (8/15 토요일)
+  '2026-09-24','2026-09-25','2026-09-26', // 추석연휴 (9/25)
+  '2026-10-03', // 개천절
+  '2026-10-09', // 한글날
+  '2026-12-25', // 크리스마스
+]);
+
+function isHoliday(dateStr){
+  return KR_HOLIDAYS.has(dateStr);
+}
+
+function isWeekend(d){
+  const dow=d.getDay();return dow===0||dow===6;
+}
+
+// 주말/공휴일 제외 실제 연차 일수 계산
+function workDaysBetween(start,end){
+  const s=pd(start),e=pd(end);
+  let count=0;
+  const cur=new Date(s);
+  while(cur<=e){
+    const ds=dsFn(cur.getFullYear(),cur.getMonth(),cur.getDate());
+    if(!isWeekend(cur)&&!isHoliday(ds)) count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return count;
+}
 const TITLES=['회장','부회장','사장','부사장','전무','상무','이사','부장','차장','과장','대리','팀장','실장','본부장','주임','사원','원장','소장','수석','책임','선임','연구원'];
 function shortName(name){
   if(!name)return name;
@@ -833,12 +914,17 @@ function tagCls(t){return{연차:'t-연차',반차오전:'t-반차오전',반차
 function calcLeave(empId){
   const vacs=S.vacations.filter(v=>v.empId===empId);
   let days=0;
-  vacs.forEach(v=>{if(v.type==='반차오전'||v.type==='반차오후')days+=0.5;else days+=daysBetween(v.start,v.end);});
+  vacs.forEach(v=>{
+    if(v.type==='반차오전'||v.type==='반차오후') days+=0.5;
+    else days+=workDaysBetween(v.start,v.end); // 주말/공휴일 제외
+  });
   const whole=Math.floor(days),half=(days%1)===0.5;
+  const fullDays=vacs.filter(v=>v.type!=='반차오전'&&v.type!=='반차오후')
+    .reduce((s,v)=>s+workDaysBetween(v.start,v.end),0);
   return{days,str:whole+(half?'.5':'')+' 일',
     amCnt:vacs.filter(v=>v.type==='반차오전').length,
     pmCnt:vacs.filter(v=>v.type==='반차오후').length,
-    fullDays:vacs.filter(v=>v.type!=='반차오전'&&v.type!=='반차오후').reduce((s,v)=>s+daysBetween(v.start,v.end),0)};
+    fullDays};
 }
 
 // ══════════════════════════════════════
@@ -1528,7 +1614,7 @@ function renderEmp(){
   const filtered=sv.filter(v=>{if(curFilter==='all')return true;if(curFilter==='완료')return isEnded(v);if(curFilter==='진행')return!isEnded(v);return v.type===curFilter;});
   document.getElementById('vac-tbody').innerHTML=filtered.map(v=>{
     const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return'';const i=S.employees.indexOf(emp);const ended=isEnded(v);
-    return`<tr><td style="text-align:left;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></div><span style="font-weight:700">${emp.name}</span><span style="font-size:10px;color:var(--muted)">${emp.dept}</span></div></td><td style="white-space:nowrap;font-size:11px">${fmtKo(v.start)}${v.start!==v.end?' → '+fmtKo(v.end):''}</td><td style="font-weight:800">${daysBetween(v.start,v.end)}일</td><td><span class="tag ${tagCls(v.type)}">${tagLbl(v.type)}</span></td><td style="overflow:hidden;max-width:0;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;font-size:11px;color:var(--slate);" title="${v.reason||'—'}">${v.reason||'—'}</div></td><td>${ended?'<span class="tag t-완료">✓ 완료</span>':'<span class="tag" style="background:#D1FAE5;color:#065F46">진행중</span>'}</td><td><div style="display:flex;gap:3px;"><button class="icon-btn" onclick="openVacEdit(${v.id})">✏️</button><button class="icon-btn del" onclick="delVac(${v.id})">✕</button></div></td></tr>`;
+    return`<tr><td style="text-align:left;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></div><span style="font-weight:700">${emp.name}</span><span style="font-size:10px;color:var(--muted)">${emp.dept}</span></div></td><td style="white-space:nowrap;font-size:11px">${fmtKo(v.start)}${v.start!==v.end?' → '+fmtKo(v.end):''}</td><td style="font-weight:800;text-align:center;">${workDaysBetween(v.start,v.end)}일<div style="font-size:9px;color:var(--muted);font-weight:500;line-height:1;">주말/공휴일 제외</div></td><td><span class="tag ${tagCls(v.type)}">${tagLbl(v.type)}</span></td><td style="overflow:hidden;max-width:0;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;font-size:11px;color:var(--slate);" title="${v.reason||'—'}">${v.reason||'—'}</div></td><td>${ended?'<span class="tag t-완료">✓ 완료</span>':'<span class="tag" style="background:#D1FAE5;color:#065F46">진행중</span>'}</td><td><div style="display:flex;gap:3px;"><button class="icon-btn" onclick="openVacEdit(${v.id})">✏️</button><button class="icon-btn del" onclick="delVac(${v.id})">✕</button></div></td></tr>`;
   }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">해당 휴가가 없습니다</td></tr>';
 }
 function setFilter(f,btn){curFilter=f;renderEmp();}
@@ -1672,6 +1758,16 @@ function saveVac(){
   closeMo('vac-mo');
 }
 function closeMo(id){document.getElementById(id).classList.remove('show');}
+function delVacFromModal(){
+  const eid=document.getElementById('vac-eid').value;
+  if(!eid)return;
+  const v=S.vacations.find(x=>x.id===+eid);
+  if(!v)return;
+  const emp=S.employees.find(e=>e.id===v.empId);
+  if(!confirm(`${emp?emp.name:''}의 휴가를 삭제할까요?\n${v.start} ~ ${v.end} (${tagLbl(v.type)})`))return;
+  closeMo('vac-mo');
+  delVac(+eid);
+}
 function delEmp(id){
   if(!confirm('직원과 해당 휴가를 모두 삭제할까요?'))return;
   S.employees=S.employees.filter(e=>e.id!==id);
