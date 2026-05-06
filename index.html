@@ -258,10 +258,12 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
 .drag-hint{text-align:center;padding:5px 8px;font-size:12px;color:var(--slate);font-weight:600;background:rgba(224,144,0,.07);border-radius:7px;border:1px dashed rgba(224,144,0,.4);flex-shrink:0;}
 
-.legend{display:flex;flex-direction:column;gap:3px;padding:7px 10px;background:var(--sur);border-radius:9px;border:1px solid var(--bdr);flex:1;overflow-y:auto;min-height:0;}
+.legend{display:flex;flex-direction:column;gap:3px;padding:7px 10px;background:var(--sur);border-radius:9px;border:1px solid var(--bdr);flex:1;overflow-y:auto;min-height:0;position:relative;}
 .legend-title{font-size:13px;font-weight:800;color:var(--navy);letter-spacing:.3px;margin-bottom:4px;flex-shrink:0;}
 .leg-item{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--slate);padding:3px 0;}
 .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+#legend-inner .leg-item:nth-child(odd){border-right:1px solid #E5E1D8;padding-right:6px;margin-right:0;}
+#legend-inner .leg-item:nth-child(even){padding-left:6px;}
 
 .upcoming-box{padding:7px 10px;background:var(--sur);border-radius:9px;border:1px solid var(--bdr);flex-shrink:0;max-height:100px;overflow-y:auto;}
 .upcoming-title{font-size:13px;font-weight:800;color:var(--navy);letter-spacing:.3px;margin-bottom:6px;}
@@ -586,8 +588,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
     <!-- Legend -->
     <div class="legend">
-      <div class="legend-title">직원</div>
-      <div id="legend-inner"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0;">
+        <div class="legend-title" style="margin-bottom:0;">직원</div>
+        <select id="legend-sort" onchange="renderMonth()" style="padding:2px 6px;border-radius:6px;border:1px solid var(--bdr);font-size:10px;font-weight:600;color:var(--navy);background:var(--bg);outline:none;">
+          <option value="default">등록순</option>
+          <option value="name">가나다순</option>
+          <option value="dept">부서별</option>
+        </select>
+      </div>
+      <div id="legend-inner" style="display:grid;grid-template-columns:1fr 1fr;gap:3px 0;position:relative;"></div>
     </div>
   </div>
 
@@ -669,8 +678,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <div class="vac-scroll">
       <table class="vac-table">
         <colgroup>
-  <col style="width:18%"/><col style="width:13%"/><col style="width:6%"/>
-  <col style="width:10%"/><col style="width:25%"/><col style="width:10%"/><col style="width:8%"/>
+  <col style="width:16%"/><col style="width:12%"/><col style="width:6%"/>
+  <col style="width:9%"/><col style="width:28%"/><col style="width:10%"/><col style="width:8%"/>
+  <col style="width:11%"/>
 </colgroup>
 <thead><tr><th>직원</th><th>기간</th><th>일수</th><th>구분</th><th>사유</th><th>상태</th><th></th></tr></thead>
         <tbody id="vac-tbody"></tbody>
@@ -1100,7 +1110,11 @@ function renderMonth(){
     <div class="stat-card"><div class="stat-icon" style="background:#FFF3B0">☀</div><div><div class="stat-num">${amC}</div><div class="stat-lbl">오전<br>반차</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#EDE9FE">🌙</div><div><div class="stat-num">${pmC}</div><div class="stat-lbl">오후<br>반차</div></div></div>`; 
 
-  document.getElementById('legend-inner').innerHTML=S.employees.map((e,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${e.name}</div>`).join('');
+  const legSort=document.getElementById('legend-sort')?document.getElementById('legend-sort').value:'default';
+  let legEmps=[...S.employees];
+  if(legSort==='name')legEmps.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  else if(legSort==='dept')legEmps.sort((a,b)=>(a.dept||'').localeCompare(b.dept||'','ko')||a.name.localeCompare(b.name,'ko'));
+  document.getElementById('legend-inner').innerHTML=legEmps.map(e=>{const i=S.employees.indexOf(e);return`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${e.name}</div>`;}).join('');
 
   // Upcoming strip
   const in14=new Date(_today.getTime()+14*86400000);
@@ -1351,6 +1365,21 @@ function tDE(e,d){if(!dragOn||dragCtx!=='y')return;dragOn=false;dragE=d;hlDrag()
 // ══════════════════════════════════════
 function renderEmp(){
   const ab=document.getElementById('annual-btn');if(ab)ab.textContent=S.annualDays+'일 (변경)';
+  // Update dept filter options
+  const deptSel=document.getElementById('emp-filter-dept');
+  if(deptSel){
+    const depts=[...new Set(S.employees.map(e=>e.dept).filter(Boolean))].sort();
+    const curDept=deptSel.value;
+    deptSel.innerHTML='<option value="all">전체 부서</option>'+depts.map(d=>`<option value="${d}"${d===curDept?' selected':''}>${d}</option>`).join('');
+  }
+  const sortMode=document.getElementById('emp-sort')?document.getElementById('emp-sort').value:'name';
+  const filterDept=document.getElementById('emp-filter-dept')?document.getElementById('emp-filter-dept').value:'all';
+  let empList=[...S.employees];
+  if(filterDept!=='all')empList=empList.filter(e=>e.dept===filterDept);
+  if(sortMode==='name')empList.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  else if(sortMode==='dept')empList.sort((a,b)=>(a.dept||'').localeCompare(b.dept||'','ko')||a.name.localeCompare(b.name,'ko'));
+  else if(sortMode==='leave-desc')empList.sort((a,b)=>calcLeave(b.id).days-calcLeave(a.id).days);
+  else if(sortMode==='leave-asc')empList.sort((a,b)=>calcLeave(a.id).days-calcLeave(b.id).days);
   // Mini calendar — colored numbers, no circles
   const mcEl=document.getElementById('mini-cal');
   if(mcEl){
@@ -1439,7 +1468,7 @@ function renderEmp(){
       <div style="font-size:10px;color:var(--muted);">진행중 ${active}건 / 전체 ${total}건</div>
     </div>${rows}`;
   }
-  document.getElementById('emp-grid').innerHTML=S.employees.map((e,i)=>{
+  document.getElementById('emp-grid').innerHTML=empList.map((e)=>{const i=S.employees.indexOf(e);
     const lv=calcLeave(e.id);const pct=S.annualDays>0?Math.min(100,Math.round(lv.days/S.annualDays*100)):0;const col=COLORS[i%COLORS.length];
     return`<div class="emp-card" style="flex-direction:column;align-items:stretch;gap:8px;">
       <div style="display:flex;align-items:center;gap:9px;">
@@ -1457,7 +1486,7 @@ function renderEmp(){
   const filtered=sv.filter(v=>{if(curFilter==='all')return true;if(curFilter==='완료')return isEnded(v);if(curFilter==='진행')return!isEnded(v);return v.type===curFilter;});
   document.getElementById('vac-tbody').innerHTML=filtered.map(v=>{
     const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return'';const i=S.employees.indexOf(emp);const ended=isEnded(v);
-    return`<tr><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></div><span style="font-weight:700">${emp.name}</span><span style="font-size:10px;color:var(--muted)">${emp.dept}</span></div></td><td style="white-space:nowrap;font-size:11px">${fmtKo(v.start)}${v.start!==v.end?' → '+fmtKo(v.end):''}</td><td style="font-weight:800">${daysBetween(v.start,v.end)}일</td><td><span class="tag ${tagCls(v.type)}">${tagLbl(v.type)}</span></td><td style="font-size:11px;color:var(--slate);max-width:150px;">${v.reason?`<b>${v.reason}</b>`:''}${v.reason&&v.memo?' · ':''}${v.memo||(!v.reason?'—':'')}</td><td>${ended?'<span class="tag t-완료">✓ 완료</span>':'<span class="tag" style="background:#D1FAE5;color:#065F46">진행중</span>'}</td><td><div style="display:flex;gap:3px;"><button class="icon-btn" onclick="openVacEdit(${v.id})">✏️</button><button class="icon-btn del" onclick="delVac(${v.id})">✕</button></div></td></tr>`;
+    return`<tr><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></div><span style="font-weight:700">${emp.name}</span><span style="font-size:10px;color:var(--muted)">${emp.dept}</span></div></td><td style="white-space:nowrap;font-size:11px">${fmtKo(v.start)}${v.start!==v.end?' → '+fmtKo(v.end):''}</td><td style="font-weight:800">${daysBetween(v.start,v.end)}일</td><td><span class="tag ${tagCls(v.type)}">${tagLbl(v.type)}</span></td><td style="overflow:hidden;max-width:0;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;font-size:11px;color:var(--slate);" title="${v.reason||'—'}">${v.reason||'—'}</div></td><td>${ended?'<span class="tag t-완료">✓ 완료</span>':'<span class="tag" style="background:#D1FAE5;color:#065F46">진행중</span>'}</td><td><div style="display:flex;gap:3px;"><button class="icon-btn" onclick="openVacEdit(${v.id})">✏️</button><button class="icon-btn del" onclick="delVac(${v.id})">✕</button></div></td></tr>`;
   }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">해당 휴가가 없습니다</td></tr>';
 }
 function setFilter(f,btn){curFilter=f;renderEmp();}
@@ -1568,6 +1597,10 @@ function saveEmp(){
   const n=document.getElementById('en').value.trim(),d=document.getElementById('ed').value.trim();
   if(!n){alert('이름을 입력해주세요');return;}
   const eid=document.getElementById('emp-eid').value;
+  // 중복 이름 체크 (수정 시 본인 제외)
+  const dup=S.employees.find(x=>x.name===n&&(eid?x.id!==+eid:true));
+  if(dup){if(!confirm(`'${n}' 이름이 이미 있습니다. (${dup.dept})
+그래도 추가할까요?`))return;}
   if(eid){const e=S.employees.find(x=>x.id===+eid);if(e){e.name=n;e.dept=d||'미지정';fbSaveEmployee(e);}}
   else{const emp={id:S.nextEmpId++,name:n,dept:d||'미지정'};S.employees.push(emp);fbSaveEmployee(emp);}
   closeMo('emp-mo');
@@ -1577,7 +1610,7 @@ function openVacMo(s,e){
   document.getElementById('vac-eid').value='';
   document.getElementById('vs').innerHTML=S.employees.length
     ? S.employees.map(emp=>`<option value="${emp.id}">${emp.name} (${emp.dept})</option>`).join('')
-    : '<option value="">직원을 먼저 추가해주세요</option>';document.getElementById('v1').value=s||dsFn(S.year,S.month,new Date().getDate());document.getElementById('v2').value=e||dsFn(S.year,S.month,new Date().getDate());document.getElementById('vt').value='연차';document.getElementById('vreason').value='';document.getElementById('vac-mo').classList.add('show');}
+    : '<option value="">직원을 먼저 추가해주세요</option>';document.getElementById('v1').value=s||dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());document.getElementById('v2').value=e||dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());document.getElementById('vt').value='연차';document.getElementById('vreason').value='';document.getElementById('vac-mo').classList.add('show');}
 function openVacEdit(id){
   const v=S.vacations.find(x=>x.id===id);if(!v)return;
   if(currentUser.role!=='admin'&&currentUser.empId&&v.empId!==currentUser.empId){alert('본인 휴가만 수정할 수 있습니다.');return;}
