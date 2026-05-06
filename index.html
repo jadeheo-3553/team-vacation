@@ -294,7 +294,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .dnum.dn-other{color:#CCC;}.dnum.dn-sun{color:var(--red);}.dnum.dn-sat{color:var(--blue);}
 .dnum.dn-today{background:var(--navy);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;}
 #bar-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible;}
-.bc-bar{position:absolute;display:flex;align-items:center;font-size:8.5px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;transition:opacity .14s;overflow:hidden;}
+.bc-bar{position:absolute;display:flex;align-items:center;font-size:8.5px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;transition:opacity .14s;overflow:hidden;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:.2px;}
 .bc-bar:hover{opacity:.78;}
 
 /* ══════════════════════════════════════
@@ -344,7 +344,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .tl-dc.tl-empty{background:#F5F4F1;cursor:default;}
 .tl-dnum{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--muted);padding:3px 0 0 3px;pointer-events:none;line-height:1;font-weight:900;}
 .tl-dnum.tn-sat{color:#1A4EC8;font-size:18px;}.tl-dnum.tn-sun{color:#DD1111;font-size:18px;}.tl-dnum.tn-today{color:var(--accent);}
-.tl-bc-bar{position:absolute;display:flex;align-items:center;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;overflow:hidden;transition:opacity .14s;}
+.tl-bc-bar{position:absolute;display:flex;align-items:center;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;pointer-events:all;overflow:hidden;transition:opacity .14s;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:.2px;}
 .tl-bc-bar:hover{opacity:.75;}
 
 /* ══════════════════════════════════════
@@ -397,6 +397,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .t-연차{background:#DBEAFE;color:#1D4ED8;}.t-반차오전{background:#FEF3C7;color:#92400E;}.t-반차오후{background:#FED7AA;color:#9A3412;}
 .t-병가{background:#FCE7F3;color:#9D174D;}.t-경조사{background:#D1FAE5;color:#065F46;}.t-기타{background:#F0EDE8;color:#4A5568;}
 .t-완료{background:#F3F4F6;color:#9CA3AF;}
+.t-개인사정{background:#EDE9FE;color:#5B21B6;}
+.t-병원진료{background:#FCE7F3;color:#9D174D;}
+.t-여행{background:#CFFAFE;color:#0E7490;}
+.t-이사{background:#FEF9C3;color:#854D0E;}
+.t-휴식{background:#DCFCE7;color:#166534;}
 
 /* ── MODAL ── */
 .mo-ov{position:fixed;inset:0;background:rgba(13,28,63,.42);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;backdrop-filter:blur(5px);}
@@ -641,21 +646,28 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   <div class="emp-right">
     <div class="emp-right-hdr">
       <div class="sec-lbl">휴가 목록</div>
-      <div class="filter-bar">
-        <button class="fbtn active" onclick="setFilter('all',this)">전체</button>
-        <button class="fbtn" onclick="setFilter('연차',this)">연차</button>
-        <button class="fbtn" onclick="setFilter('반차오전',this)">오전반차</button>
-        <button class="fbtn" onclick="setFilter('반차오후',this)">오후반차</button>
-        <button class="fbtn" onclick="setFilter('병가',this)">병가</button>
-        <button class="fbtn" onclick="setFilter('경조사',this)">경조사</button>
-        <button class="fbtn" onclick="setFilter('기타',this)">기타</button>
-        <button class="fbtn" onclick="setFilter('완료',this)">완료</button>
-        <button class="fbtn" onclick="setFilter('진행',this)">진행중</button>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <select onchange="setFilterSel(this)" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--bdr);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--navy);background:var(--sur);cursor:pointer;outline:none;" id="filter-select">
+          <option value="all">전체</option>
+          <option value="연차">연차</option>
+          <option value="반차오전">오전 반차</option>
+          <option value="반차오후">오후 반차</option>
+          <option value="병가">병가</option>
+          <option value="경조사">경조사</option>
+          <option value="개인사정">개인사정</option>
+          <option value="병원진료">병원진료</option>
+          <option value="여행">여행</option>
+          <option value="이사">이사</option>
+          <option value="휴식">휴식</option>
+          <option value="기타">기타</option>
+          <option value="완료">완료</option>
+          <option value="진행">진행중</option>
+        </select>
       </div>
     </div>
     <div class="vac-scroll">
       <table class="vac-table">
-        <thead><tr><th>직원</th><th>기간</th><th>일수</th><th>구분</th><th>사유/메모</th><th>상태</th><th></th></tr></thead>
+        <thead><tr><th>직원</th><th>기간</th><th>일수</th><th>구분</th><th style="min-width:180px;max-width:240px;">사유</th><th>상태</th><th></th></tr></thead>
         <tbody id="vac-tbody"></tbody>
       </table>
     </div>
@@ -688,14 +700,21 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <label>구분</label>
     <select class="mo-inp" id="vt">
-      <option value="연차">연차</option><option value="반차오전">반차 (오전)</option>
-      <option value="반차오후">반차 (오후)</option><option value="병가">병가</option>
-      <option value="경조사">경조사</option><option value="기타">기타</option>
+      <option value="연차">연차</option>
+      <option value="반차오전">반차 (오전)</option>
+      <option value="반차오후">반차 (오후)</option>
+      <option value="병가">병가</option>
+      <option value="경조사">경조사</option>
+      <option value="개인사정">개인사정</option>
+      <option value="병원진료">병원진료</option>
+      <option value="여행">여행</option>
+      <option value="이사">이사</option>
+      <option value="휴식">휴식</option>
+      <option value="기타">기타</option>
     </select>
     <label>사유 <small style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted)">(자유입력)</small></label>
     <input class="mo-inp" id="vreason" placeholder="예: 가족여행, 건강검진 등"/>
-    <label>메모 <small style="font-weight:400;text-transform:none;font-size:10px;color:var(--muted)">(선택)</small></label>
-    <input class="mo-inp" id="vmemo" placeholder="추가 메모"/>
+
     <div class="mo-acts">
       <button class="btn btn-cancel" onclick="closeMo('vac-mo')">취소</button>
       <button class="btn btn-p" onclick="saveVac()">저장</button>
@@ -771,8 +790,8 @@ function gc(id){const i=S.employees.findIndex(e=>e.id===id);return i>=0?COLORS[i
 function fmtKo(s){const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`;}
 function daysBetween(s,e){return Math.round((pd(e)-pd(s))/86400000)+1;}
 function isEnded(v){return pd(v.end)<_today;}
-function tagLbl(t){return{연차:'연차',반차오전:'반차(오전)',반차오후:'반차(오후)',병가:'병가',경조사:'경조사',기타:'기타'}[t]||t;}
-function tagCls(t){return{연차:'t-연차',반차오전:'t-반차오전',반차오후:'t-반차오후',병가:'t-병가',경조사:'t-경조사',기타:'t-기타'}[t]||'t-기타';}
+function tagLbl(t){return{연차:'연차',반차오전:'반차(오전)',반차오후:'반차(오후)',병가:'병가',경조사:'경조사',개인사정:'개인사정',병원진료:'병원진료',여행:'여행',이사:'이사',휴식:'휴식',기타:'기타'}[t]||t;}
+function tagCls(t){return{연차:'t-연차',반차오전:'t-반차오전',반차오후:'t-반차오후',병가:'t-병가',경조사:'t-경조사',개인사정:'t-개인사정',병원진료:'t-병원진료',여행:'t-여행',이사:'t-이사',휴식:'t-휴식',기타:'t-기타'}[t]||'t-기타';}
 function calcLeave(empId){
   const vacs=S.vacations.filter(v=>v.empId===empId);
   let days=0;
@@ -1146,7 +1165,7 @@ function drawMonthBars(cells,fullVacs,vacSlot,halfVacs){
         else if(isR)borderR='0 7px 7px 0';
         const arrowTip=(isR&&!seg.isOther&&barW>20)?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${BAR_H/2}px solid transparent;border-bottom:${BAR_H/2}px solid transparent;border-left:7px solid ${col}${segAlpha};pointer-events:none;"></div>`:'';
         const showName=isL&&!seg.isOther;
-        barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${segAlpha};border-left:${isL?'2.5px':'0'} solid ${segBd};border-radius:${borderR};padding-left:${isL?7:3}px;color:${segTxt};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${showName?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.25);">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+        barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${segAlpha};border-left:${isL?'2.5px':'0'} solid ${segBd};border-radius:${borderR};padding-left:${isL?7:3}px;color:${segTxt};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${showName?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.3);letter-spacing:.3px;">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
       });
     });
   });
@@ -1273,6 +1292,37 @@ function tDE(e,d){if(!dragOn||dragCtx!=='y')return;dragOn=false;dragE=d;hlDrag()
 // ══════════════════════════════════════
 function renderEmp(){
   const ab=document.getElementById('annual-btn');if(ab)ab.textContent=S.annualDays+'일 (변경)';
+  // Density chart: how many off per day this month
+  const dcEl=document.getElementById('density-chart');
+  if(dcEl){
+    const y=S.year,m=S.month;
+    const dim=new Date(y,m+1,0).getDate();
+    const cur=`${y}-${String(m+1).padStart(2,'0')}`;
+    const mv=S.vacations.filter(v=>v.start.slice(0,7)<=cur&&v.end.slice(0,7)>=cur);
+    const counts=[];
+    for(let d=1;d<=dim;d++){
+      const ds=dsFn(y,m,d);
+      counts.push({d,n:mv.filter(v=>v.start<=ds&&v.end>=ds).length});
+    }
+    const maxN=Math.max(1,...counts.map(c=>c.n));
+    const bars=counts.map(({d,n})=>{
+      const dow=new Date(y,m,d).getDay();
+      const isSun=dow===0,isSat=dow===6;
+      const col=n===0?'var(--bdr)':n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4';
+      const h=n===0?4:Math.max(8,Math.round(n/maxN*36));
+      return`<div title="${d}일: ${n}명 휴가" style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:default;">
+        <div style="width:10px;height:${h}px;background:${col};border-radius:2px;align-self:flex-end;"></div>
+        <div style="font-size:8px;color:${isSun?'var(--red)':isSat?'var(--blue)':'var(--muted)'};font-weight:${isSun||isSat?'800':'500'};line-height:1;">${d}</div>
+      </div>`;
+    }).join('');
+    dcEl.innerHTML=`<div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:8px;">이번 달 일별 휴가 인원</div>
+      <div style="display:flex;align-items:flex-end;gap:2px;height:52px;">${bars}</div>
+      <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--muted);">
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#1A56C4;border-radius:2px;display:inline-block;"></span>1명</span>
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#D97706;border-radius:2px;display:inline-block;"></span>2명</span>
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#D94F3D;border-radius:2px;display:inline-block;"></span>3명+</span>
+      </div>`;
+  }
   // Team overview widget
   const ovEl=document.getElementById('team-overview');
   if(ovEl){
@@ -1316,7 +1366,8 @@ function renderEmp(){
     return`<tr><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></div><span style="font-weight:700">${emp.name}</span><span style="font-size:10px;color:var(--muted)">${emp.dept}</span></div></td><td style="white-space:nowrap;font-size:11px">${fmtKo(v.start)}${v.start!==v.end?' → '+fmtKo(v.end):''}</td><td style="font-weight:800">${daysBetween(v.start,v.end)}일</td><td><span class="tag ${tagCls(v.type)}">${tagLbl(v.type)}</span></td><td style="font-size:11px;color:var(--slate);max-width:150px;">${v.reason?`<b>${v.reason}</b>`:''}${v.reason&&v.memo?' · ':''}${v.memo||(!v.reason?'—':'')}</td><td>${ended?'<span class="tag t-완료">✓ 완료</span>':'<span class="tag" style="background:#D1FAE5;color:#065F46">진행중</span>'}</td><td><div style="display:flex;gap:3px;"><button class="icon-btn" onclick="openVacEdit(${v.id})">✏️</button><button class="icon-btn del" onclick="delVac(${v.id})">✕</button></div></td></tr>`;
   }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">해당 휴가가 없습니다</td></tr>';
 }
-function setFilter(f,btn){curFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderEmp();}
+function setFilter(f,btn){curFilter=f;renderEmp();}
+function setFilterSel(sel){curFilter=sel.value;renderEmp();}
 function changeAnnualDays(){const n=parseInt(prompt('연간 기본 연차 일수를 입력하세요:',String(S.annualDays)));if(isNaN(n)||n<1)return;S.annualDays=n;fbSaveMeta();renderEmp();}
 
 // ══════════════════════════════════════
