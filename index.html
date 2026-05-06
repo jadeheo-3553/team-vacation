@@ -665,14 +665,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         </select>
       </div>
     </div>
-    <div class="emp-widgets" style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-      <div id="team-overview" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-        <div id="density-chart" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;"></div>
-        <div id="mini-cal" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;"></div>
-      </div>
-    </div>
-    <div class="vac-scroll">
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 260px;gap:8px;overflow:hidden;">
+      <div class="vac-scroll">
       <table class="vac-table">
         <colgroup>
   <col style="width:18%"/><col style="width:13%"/><col style="width:6%"/>
@@ -682,6 +676,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <tbody id="vac-tbody"></tbody>
       </table>
     </div>
+    <div id="mini-cal" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;overflow-y:auto;"></div>
+  </div>
   </div>
 </div>
 
@@ -1345,36 +1341,40 @@ function tDE(e,d){if(!dragOn||dragCtx!=='y')return;dragOn=false;dragE=d;hlDrag()
 // ══════════════════════════════════════
 function renderEmp(){
   const ab=document.getElementById('annual-btn');if(ab)ab.textContent=S.annualDays+'일 (변경)';
-  // Mini calendar
+  // Mini calendar — colored numbers, no circles
   const mcEl=document.getElementById('mini-cal');
   if(mcEl){
     const y=S.year,m=S.month;
     const MN2=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
     const dim=new Date(y,m+1,0).getDate();
-    const sd=new Date(y,m,1).getDay(); // 0=Sun
+    const sd=new Date(y,m,1).getDay();
     const cur=`${y}-${String(m+1).padStart(2,'0')}`;
     const mv=S.vacations.filter(v=>v.start.slice(0,7)<=cur&&v.end.slice(0,7)>=cur);
     const DOW2=['일','월','화','수','목','금','토'];
-    let rows='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;">';
-    DOW2.forEach((d,i)=>rows+=`<div style="text-align:center;font-size:9px;font-weight:800;color:${i===0?'var(--red)':i===6?'var(--blue)':'var(--muted)'};">${d}</div>`);
-    rows+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">';
-    // empty cells before first day
+    let rows='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:4px;">';
+    DOW2.forEach((d,i)=>rows+=`<div style="text-align:center;font-size:10px;font-weight:800;padding:2px 0;color:${i===0?'var(--red)':i===6?'var(--blue)':'var(--muted)'};">${d}</div>`);
+    rows+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;">';
     for(let i=0;i<sd;i++)rows+=`<div></div>`;
     for(let d=1;d<=dim;d++){
       const ds=dsFn(y,m,d);
-      const n=mv.filter(v=>v.start<=ds&&v.end>=ds).length;
+      const vacs=mv.filter(v=>v.start<=ds&&v.end>=ds);
+      const n=vacs.length;
       const dow=new Date(y,m,d).getDay();
       const isToday=ds===TS;
-      const col=n===0?'transparent':n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4';
-      const txtCol=n===0?(dow===0?'var(--red)':dow===6?'var(--blue)':'var(--navy)'):'#fff';
-      const bg=isToday&&n===0?'var(--navy)':n>0?col:'transparent';
-      const ftCol=isToday&&n===0?'#fff':txtCol;
-      rows+=`<div title="${d}일: ${n>0?n+'명 휴가':'휴가 없음'}" style="text-align:center;font-size:10px;font-weight:700;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:${bg};color:${ftCol};cursor:default;position:relative;">
-        ${d}${n>0?`<span style="position:absolute;top:-2px;right:-1px;font-size:8px;font-weight:800;color:${col};background:#fff;border-radius:50%;width:10px;height:10px;display:flex;align-items:center;justify-content:center;border:1px solid ${col}">${n}</span>`:''}
+      // Color: 0명=요일색, 1명=파랑, 2명=주황, 3명+=빨강
+      const numCol=n===0?(dow===0?'var(--red)':dow===6?'var(--blue)':'var(--navy)'):n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4';
+      const bg=isToday?'var(--navy)':'transparent';
+      const todayCol=isToday?'#fff':numCol;
+      // Tooltip: list names
+      const names=vacs.map(v=>{const emp=S.employees.find(e=>e.id===v.empId);return emp?emp.name:'?';}).join(', ');
+      const tip=n>0?`${d}일: ${names}`:`${d}일`;
+      rows+=`<div title="${tip}" style="text-align:center;padding:3px 1px;cursor:${n>0?'pointer':'default'};" onclick="${n>0?`showDayPopup(event,'${ds}')`:''}" >
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:${isToday?'15px':n>0?'17px':'13px'};font-weight:900;color:${todayCol};background:${bg};border-radius:${isToday?'50%':'3px'};width:${isToday?'22px':'auto'};height:${isToday?'22px':'auto'};display:inline-flex;align-items:center;justify-content:center;line-height:1;">${d}</div>
+        ${n>0?`<div style="font-size:9px;font-weight:800;color:${n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4'};">${n}명</div>`:'<div style="font-size:9px;">&nbsp;</div>'}
       </div>`;
     }
     rows+='</div>';
-    mcEl.innerHTML=`<div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:8px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}`;
+    mcEl.innerHTML=`<div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:6px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}`;
   }
   // Density chart: how many off per day this month
   const dcEl=document.getElementById('density-chart');
@@ -1563,24 +1563,22 @@ function saveEmp(){
   closeMo('emp-mo');
 }
 function openVacMo(s,e){
-  if(!currentUser){alert('로그인이 필요합니다.');return;}
   document.getElementById('vac-mo-title').textContent='휴가 등록';
   document.getElementById('vac-eid').value='';
   document.getElementById('vs').innerHTML=S.employees.length
     ? S.employees.map(emp=>`<option value="${emp.id}">${emp.name} (${emp.dept})</option>`).join('')
-    : '<option value="">직원을 먼저 추가해주세요</option>';document.getElementById('v1').value=s||dsFn(S.year,S.month,new Date().getDate());document.getElementById('v2').value=e||dsFn(S.year,S.month,new Date().getDate());document.getElementById('vt').value='연차';document.getElementById('vreason').value='';document.getElementById('vmemo').value='';document.getElementById('vac-mo').classList.add('show');}
+    : '<option value="">직원을 먼저 추가해주세요</option>';document.getElementById('v1').value=s||dsFn(S.year,S.month,new Date().getDate());document.getElementById('v2').value=e||dsFn(S.year,S.month,new Date().getDate());document.getElementById('vt').value='연차';document.getElementById('vreason').value='';document.getElementById('vac-mo').classList.add('show');}
 function openVacEdit(id){
-  if(!currentUser)return;
   const v=S.vacations.find(x=>x.id===id);if(!v)return;
   if(currentUser.role!=='admin'&&currentUser.empId&&v.empId!==currentUser.empId){alert('본인 휴가만 수정할 수 있습니다.');return;}
-  document.getElementById('vac-mo-title').textContent='휴가 수정';document.getElementById('vac-eid').value=id;document.getElementById('vs').innerHTML=S.employees.map(emp=>`<option value="${emp.id}"${emp.id===v.empId?' selected':''}>${emp.name} (${emp.dept})</option>`).join('');document.getElementById('v1').value=v.start;document.getElementById('v2').value=v.end;document.getElementById('vt').value=v.type;document.getElementById('vreason').value=v.reason||'';document.getElementById('vmemo').value=v.memo||'';document.getElementById('vac-mo').classList.add('show');
+  document.getElementById('vac-mo-title').textContent='휴가 수정';document.getElementById('vac-eid').value=id;document.getElementById('vs').innerHTML=S.employees.map(emp=>`<option value="${emp.id}"${emp.id===v.empId?' selected':''}>${emp.name} (${emp.dept})</option>`).join('');document.getElementById('v1').value=v.start;document.getElementById('v2').value=v.end;document.getElementById('vt').value=v.type;document.getElementById('vreason').value=v.reason||'';if(document.getElementById('vmemo'))document.getElementById('vmemo').value=v.memo||'';document.getElementById('vac-mo').classList.add('show');
 }
 function saveVac(){
   if(!currentUser){alert('로그인이 필요합니다.');return;}
   const empId=+document.getElementById('vs').value;
   if(currentUser.role!=='admin'&&currentUser.empId&&empId!==currentUser.empId){alert('본인 휴가만 등록할 수 있습니다.');return;}
   let s=document.getElementById('v1').value,e=document.getElementById('v2').value;
-  const t=document.getElementById('vt').value,reason=document.getElementById('vreason').value.trim(),memo=document.getElementById('vmemo').value.trim();
+  const t=document.getElementById('vt').value,reason=document.getElementById('vreason').value.trim(),memo=(document.getElementById('vmemo')?document.getElementById('vmemo').value.trim():'');
   if(!s||!e){alert('날짜를 입력해주세요');return;}
   if(s>e)[s,e]=[e,s];
   const eid=document.getElementById('vac-eid').value;
@@ -1599,6 +1597,24 @@ function delVac(id){if(!confirm('이 휴가를 삭제할까요?'))return;S.vacat
 
 // half-day popup
 let _pop=null;
+function showDayPopup(e,ds){
+  e.stopPropagation();
+  const d=pd(ds);
+  const cur=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const mv=S.vacations.filter(v=>v.start<=ds&&v.end>=ds);
+  if(!mv.length)return;
+  const lines=mv.map(v=>{const emp=S.employees.find(x=>x.id===v.empId);return`• ${emp?emp.name:'?'} (${tagLbl(v.type)})`;}).join('\n');
+  if(_pop){_pop.remove();_pop=null;}
+  const p=document.createElement('div');
+  p.style.cssText='position:fixed;z-index:9990;background:#0D1C3F;color:#fff;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:600;line-height:1.7;box-shadow:0 6px 24px rgba(13,28,63,.3);pointer-events:none;white-space:pre;';
+  p.textContent=`${d.getMonth()+1}/${d.getDate()} 휴가 (${mv.length}명)\n${lines}`;
+  document.body.appendChild(p);_pop=p;
+  const pr=p.getBoundingClientRect();
+  let left=e.clientX+8,top=e.clientY-pr.height/2;
+  if(left+pr.width>window.innerWidth-6)left=e.clientX-pr.width-8;
+  p.style.left=left+'px';p.style.top=top+'px';
+  setTimeout(()=>{document.addEventListener('click',()=>{if(_pop){_pop.remove();_pop=null;}},{once:true});},10);
+}
 function showHalfPopup(e,label,names){e.stopPropagation();if(_pop){_pop.remove();_pop=null;}const p=document.createElement('div');p.style.cssText='position:fixed;z-index:9990;background:#0D1C3F;color:#fff;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:600;line-height:1.7;box-shadow:0 6px 24px rgba(13,28,63,.3);pointer-events:none;white-space:nowrap;';p.innerHTML=`<div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:4px;">${label}</div>${names.split(', ').map(n=>`• ${n}`).join('<br>')}`;document.body.appendChild(p);_pop=p;const pr=p.getBoundingClientRect();let left=e.clientX+8,top=e.clientY-pr.height/2;if(left+200>window.innerWidth)left=e.clientX-210;p.style.left=left+'px';p.style.top=top+'px';setTimeout(()=>{document.addEventListener('click',()=>{if(_pop){_pop.remove();_pop=null;}},{once:true});},10);}
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.mo-ov.show').forEach(m=>m.classList.remove('show'));closePnl();}});
