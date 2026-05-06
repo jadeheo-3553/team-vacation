@@ -689,7 +689,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         <tbody id="vac-tbody"></tbody>
       </table>
     </div>
-    <div id="mini-cal" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:10px 14px;overflow-y:auto;"></div>
+    <div id="mini-cal" style="background:var(--sur);border-radius:10px;border:1px solid var(--bdr);padding:14px 16px;overflow-y:auto;display:flex;flex-direction:column;"></div>
   </div>
   </div>
 </div>
@@ -1199,7 +1199,7 @@ function drawMonthBars(cells,fullVacs,vacSlot,halfVacs){
         else if(isR)borderR='0 7px 7px 0';
         const arrowTip=(isR&&!seg.isOther&&barW>20)?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${BAR_H/2}px solid transparent;border-bottom:${BAR_H/2}px solid transparent;border-left:7px solid ${col}${segAlpha};pointer-events:none;"></div>`:'';
         const showName=isL&&!seg.isOther;
-        barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${segAlpha};border-left:${isL?'2.5px':'0'} solid ${segBd};border-radius:${borderR};padding-left:${isL?7:3}px;color:${segTxt};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${showName?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.3);letter-spacing:.3px;">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+        barsHtml+=`<div class="bc-bar" style="left:${x1}px;top:${barY}px;width:${barW}px;height:${BAR_H}px;background:${col}${segAlpha};border-left:${isL?'2.5px':'0'} solid ${segBd};border-radius:${borderR};padding-left:${isL?7:3}px;color:${segTxt};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}${v.reason?' · '+v.reason:''}||${v.start} ~ ${v.end}">${showName?`<span style="overflow:hidden;text-overflow:ellipsis;max-width:90%;display:block;pointer-events:none;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.8),0 0 4px rgba(0,0,0,.5);letter-spacing:.3px;">${emp.name}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
       });
     });
   });
@@ -1354,7 +1354,7 @@ function drawTLBars(y,m){
     const alpha=ended?'1A':'BB',bdCol=ended?col+'55':col,txtCol=ended?'#AAAAAA':'#FFFFFF';
     let borderR='0';if(isL&&isR)borderR='5px';else if(isL)borderR='5px 0 0 5px';else if(isR)borderR='0 5px 5px 0';
     const arrowTip=isR?`<div style="position:absolute;right:-1px;top:0;width:0;height:0;border-top:${TL_BAR_H/2}px solid transparent;border-bottom:${TL_BAR_H/2}px solid transparent;border-left:5px solid ${col}${alpha};pointer-events:none;"></div>`:'';
-    barsHtml+=`<div class="tl-bc-bar" style="left:${x1}px;top:${barTopY}px;width:${barW}px;height:${TL_BAR_H}px;background:${col}${alpha};border-left:${isL?'2px':'0'} solid ${bdCol};border-radius:${borderR};padding-left:${isL?5:2}px;color:${txtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start} ~ ${v.end}">${isL?`<span style="font-size:12px;font-weight:800;pointer-events:none;">${shortName(emp.name)}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
+    barsHtml+=`<div class="tl-bc-bar" style="left:${x1}px;top:${barTopY}px;width:${barW}px;height:${TL_BAR_H}px;background:${col}${alpha};border-left:${isL?'2px':'0'} solid ${bdCol};border-radius:${borderR};padding-left:${isL?5:2}px;color:${txtCol};overflow:visible;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start} ~ ${v.end}">${isL?`<span style="font-size:12px;font-weight:800;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.8),0 0 3px rgba(0,0,0,.5);">${shortName(emp.name)}${ended?' ✓':''}</span>`:''} ${arrowTip}</div>`;
   });
   mHalf.forEach(v=>{const d=parseInt(v.start.split('-')[2]);const cel=cellEls[d];if(!cel)return;const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return;const col=gc(v.empId);const ended=isEnded(v);const isAM=v.type==='반차오전';const cr=cel.rect;const x=cr.left-rowRect.left+(isAM?0:cr.width/2);const w=cr.width/2;const rowH=rowEl.getBoundingClientRect().height;barsHtml+=`<div class="tl-bc-bar" style="left:${x}px;top:${rowH-18}px;width:${w}px;height:14px;background:${isAM?'#FFF3B0':'#EDE9FE'};border-top:3px solid ${isAM?'#F59E0B':'#7C3AED'};border-radius:${isAM?'3px 0 0 3px':'0 3px 3px 0'};padding-left:2px;color:${isAM?'#B45309':'#5B21B6'};font-size:7px;" onclick="openVacEdit(${v.id})" data-tip="${emp.name}||${tagLbl(v.type)}||${v.start}"><span style="pointer-events:none">${isAM?'☀':'🌙'} ${emp.name}</span></div>`;});
   canvas.innerHTML=barsHtml;
@@ -1416,7 +1416,38 @@ function renderEmp(){
       </div>`;
     }
     rows+='</div>';
-    mcEl.innerHTML=`<div style="font-size:18px;font-weight:800;color:var(--navy);margin-bottom:10px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}`;
+
+    // Today's vacationers section
+    const todayVacs=mv.filter(v=>v.start<=TS&&v.end>=TS);
+    let todaySection='';
+    if(todayVacs.length>0){
+      const todayList=todayVacs.map(v=>{
+        const emp=S.employees.find(e=>e.id===v.empId);
+        if(!emp)return'';
+        const i=S.employees.indexOf(emp);
+        const col=COLORS[i%COLORS.length];
+        const lbl=tagLbl(v.type);
+        return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr);">
+          <div style="width:10px;height:10px;border-radius:50%;background:${col};flex-shrink:0;"></div>
+          <div style="flex:1;font-size:14px;font-weight:700;color:var(--navy);">${emp.name}</div>
+          <div style="font-size:12px;color:var(--muted);">${lbl}</div>
+        </div>`;
+      }).join('');
+      todaySection=`<div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bdr);">
+        <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:8px;">
+          📋 오늘 휴가 중인 직원
+          <span style="font-size:12px;font-weight:600;color:var(--muted);margin-left:4px;">${todayVacs.length}명</span>
+        </div>
+        ${todayList}
+      </div>`;
+    } else {
+      todaySection=`<div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bdr);">
+        <div style="font-size:14px;font-weight:800;color:var(--navy);margin-bottom:6px;">📋 오늘 휴가 중인 직원</div>
+        <div style="font-size:13px;color:var(--muted);padding:8px 0;">오늘 휴가 중인 직원이 없어요</div>
+      </div>`;
+    }
+
+    mcEl.innerHTML=`<div style="font-size:18px;font-weight:800;color:var(--navy);margin-bottom:10px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}${todaySection}`;
   }
   // Density chart: how many off per day this month
   const dcEl=document.getElementById('density-chart');
