@@ -677,7 +677,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
         </select>
       </div>
     </div>
-    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 200px;gap:10px;overflow:hidden;">
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 400px;gap:10px;overflow:hidden;">
       <div class="vac-scroll">
       <table class="vac-table">
         <colgroup>
@@ -792,7 +792,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 // ══════════════════════════════════════
 //  CONSTANTS & STATE
 // ══════════════════════════════════════
-const COLORS=['#D94F3D','#1A56C4','#16A34A','#D97706','#7C3AED','#DB2777','#0891B2','#EA580C','#065F46','#4338CA','#B45309','#0F766E','#9333EA','#C2410C','#0369A1'];
+const COLORS=['#D32F2F','#FF6B6B','#E65100','#FF9800','#F9A825','#C6A800','#558B2F','#7CB342','#1B5E20','#2E7D32','#43A047','#00897B','#006064','#0097A7','#00ACC1','#01579B','#1565C0','#1976D2','#2196F3','#40C4FF','#283593','#3949AB','#5C6BC0','#4A148C','#7B1FA2','#AB47BC','#CE93D8','#880E4F','#E91E63','#F06292'];
 const _today=new Date();_today.setHours(0,0,0,0);
 const TS=dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());
 let curFilter='all', curQ=1, currentUser=null;
@@ -1394,7 +1394,7 @@ function renderEmp(){
     const mv=S.vacations.filter(v=>v.start.slice(0,7)<=cur&&v.end.slice(0,7)>=cur);
     const DOW2=['일','월','화','수','목','금','토'];
     let rows='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:4px;">';
-    DOW2.forEach((d,i)=>rows+=`<div style="text-align:center;font-size:11px;font-weight:800;padding:2px 0;color:${i===0?'var(--red)':i===6?'var(--blue)':'var(--muted)'};">${d}</div>`);
+    DOW2.forEach((d,i)=>rows+=`<div style="text-align:center;font-size:16px;font-weight:800;padding:4px 0;color:${i===0?'var(--red)':i===6?'var(--blue)':'var(--muted)'};">${d}</div>`);
     rows+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;">';
     for(let i=0;i<sd;i++)rows+=`<div></div>`;
     for(let d=1;d<=dim;d++){
@@ -1411,12 +1411,12 @@ function renderEmp(){
       const names=vacs.map(v=>{const emp=S.employees.find(e=>e.id===v.empId);return emp?emp.name:'?';}).join(', ');
       const tip=n>0?`${d}일: ${names}`:`${d}일`;
       rows+=`<div title="${tip}" style="text-align:center;padding:3px 1px;cursor:${n>0?'pointer':'default'};" onclick="${n>0?`showDayPopup(event,'${ds}')`:''}" >
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:${isToday?'16px':n>0?'18px':'13px'};font-weight:900;color:${todayCol};background:${bg};border-radius:${isToday?'50%':'3px'};width:${isToday?'22px':'auto'};height:${isToday?'22px':'auto'};display:inline-flex;align-items:center;justify-content:center;line-height:1;">${d}</div>
-        ${n>0?`<div style="font-size:10px;font-weight:800;color:${n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4'};">${n}명</div>`:'<div style="font-size:9px;">&nbsp;</div>'}
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:${isToday?'22px':n>0?'26px':'18px'};font-weight:900;color:${todayCol};background:${bg};border-radius:${isToday?'50%':'3px'};width:${isToday?'22px':'auto'};height:${isToday?'22px':'auto'};display:inline-flex;align-items:center;justify-content:center;line-height:1;">${d}</div>
+        ${n>0?`<div style="font-size:14px;font-weight:800;color:${n>=3?'#D94F3D':n===2?'#D97706':'#1A56C4'};">${n}명</div>`:'<div style="font-size:9px;">&nbsp;</div>'}
       </div>`;
     }
     rows+='</div>';
-    mcEl.innerHTML=`<div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:6px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}`;
+    mcEl.innerHTML=`<div style="font-size:18px;font-weight:800;color:var(--navy);margin-bottom:10px;">${y}년 ${MN2[m]} 휴가 현황</div>${rows}`;
   }
   // Density chart: how many off per day this month
   const dcEl=document.getElementById('density-chart');
