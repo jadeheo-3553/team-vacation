@@ -657,7 +657,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   <!-- RIGHT: vacation table -->
   <div class="emp-right">
     <div class="emp-right-hdr">
-      <div class="sec-lbl">휴가 목록</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;">
+        <div class="sec-lbl">휴가 목록</div>
+        <div style="display:flex;background:var(--bg);border:2px solid var(--navy);border-radius:9px;padding:3px;gap:2px;flex-shrink:0;">
+          <button id="status-tab-active" onclick="setStatusTab('active')"
+            style="padding:5px 16px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;background:var(--navy);color:#fff;transition:all .15s;">진행중</button>
+          <button id="status-tab-done" onclick="setStatusTab('done')"
+            style="padding:5px 16px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;background:transparent;color:var(--navy);transition:all .15s;">완료</button>
+        </div>
+      </div>
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
         <select onchange="setFilterSel(this)" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--bdr);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--navy);background:var(--sur);cursor:pointer;outline:none;" id="filter-select">
           <option value="all">전체</option>
@@ -672,8 +680,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <option value="이사">이사</option>
           <option value="휴식">휴식</option>
           <option value="기타">기타</option>
-          <option value="완료">완료</option>
-          <option value="진행">진행중</option>
         </select>
       </div>
     </div>
