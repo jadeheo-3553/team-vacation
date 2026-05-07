@@ -798,7 +798,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 const COLORS=['#B71C1C','#EF9A9A','#BF360C','#FFCC80','#E65100','#FFE082','#33691E','#AED581','#1B5E20','#80CBC4','#004D40','#80DEEA','#006064','#B2EBF2','#01579B','#90CAF9','#0D47A1','#9FA8DA','#1A237E','#B39DDB','#4A148C','#CE93D8','#6A1B9A','#F48FB1','#880E4F','#F8BBD0','#C62828','#FFAB91','#4E342E','#A1887F'];
 const _today=new Date();_today.setHours(0,0,0,0);
 const TS=dsFn(_today.getFullYear(),_today.getMonth(),_today.getDate());
-let curFilter='all', curQ=1, currentUser=null;
+let curFilter='all', curQ=1, currentUser=null, curStatusTab='active';
 
 // S = local mirror of Firebase data (always kept in sync)
 let S={
@@ -1611,13 +1611,45 @@ function renderEmp(){
       </div></div>`;
   }).join('');
   const sv=[...S.vacations].sort((a,b)=>b.start>a.start?-1:1);
-  const filtered=sv.filter(v=>{if(curFilter==='all')return true;if(curFilter==='완료')return isEnded(v);if(curFilter==='진행')return!isEnded(v);return v.type===curFilter;});
+  const filtered=sv.filter(v=>{
+    // 먼저 진행중/완료 탭 필터
+    if(curStatusTab==='active'&&isEnded(v))return false;
+    if(curStatusTab==='done'&&!isEnded(v))return false;
+    // 세부 타입 필터 (완료/진행중 옵션은 탭이 대체하므로 무시)
+    if(curFilter==='완료'||curFilter==='진행')return true;
+    if(curFilter==='all')return true;
+    return v.type===curFilter;
+  });
+  // 탭별 카운트 업데이트
+  const activeCount=S.vacations.filter(v=>!isEnded(v)).length;
+  const doneCount=S.vacations.filter(v=>isEnded(v)).length;
+  const btnA=document.getElementById('status-tab-active');
+  const btnD=document.getElementById('status-tab-done');
+  if(btnA)btnA.textContent=`진행중 ${activeCount}`;
+  if(btnD)btnD.textContent=`완료 ${doneCount}`;
   document.getElementById('vac-tbody').innerHTML=filtered.map(v=>{
     const emp=S.employees.find(e=>e.id===v.empId);if(!emp)return'';const i=S.employees.indexOf(emp);const ended=isEnded(v);
-    return`<tr><td style="text-align:left;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></div><span style="font-weight:700">${emp.name}</span><span style="font-size:10px;color:var(--muted)">${emp.dept}</span></div></td><td style="white-space:nowrap;font-size:11px">${fmtKo(v.start)}${v.start!==v.end?' → '+fmtKo(v.end):''}</td><td style="font-weight:800;text-align:center;">${workDaysBetween(v.start,v.end)}일<div style="font-size:9px;color:var(--muted);font-weight:500;line-height:1;">주말/공휴일 제외</div></td><td><span class="tag ${tagCls(v.type)}">${tagLbl(v.type)}</span></td><td style="overflow:hidden;max-width:0;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;font-size:11px;color:var(--slate);" title="${v.reason||'—'}">${v.reason||'—'}</div></td><td>${ended?'<span class="tag t-완료">✓ 완료</span>':'<span class="tag" style="background:#D1FAE5;color:#065F46">진행중</span>'}</td><td><div style="display:flex;gap:3px;"><button class="icon-btn" onclick="openVacEdit(${v.id})">✏️</button><button class="icon-btn del" onclick="delVac(${v.id})">✕</button></div></td></tr>`;
+    const statusBadge=isEnded(v)?'<span class="tag t-완료">✓ 완료</span>':'<span class="tag" style="background:#D1FAE5;color:#065F46">진행중</span>';
+    return`<tr><td style="text-align:left;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></div><span style="font-weight:700">${emp.name}</span><span style="font-size:10px;color:var(--muted)">${emp.dept}</span></div></td><td style="white-space:nowrap;font-size:11px">${fmtKo(v.start)}${v.start!==v.end?' → '+fmtKo(v.end):''}</td><td style="font-weight:800;text-align:center;">${workDaysBetween(v.start,v.end)}일<div style="font-size:9px;color:var(--muted);font-weight:500;line-height:1;">주말/공휴일 제외</div></td><td><span class="tag ${tagCls(v.type)}">${tagLbl(v.type)}</span></td><td style="overflow:hidden;max-width:0;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;font-size:11px;color:var(--slate);" title="${v.reason||'—'}">${v.reason||'—'}</div></td><td>${statusBadge}</td><td><div style="display:flex;gap:3px;"><button class="icon-btn" onclick="openVacEdit(${v.id})">✏️</button><button class="icon-btn del" onclick="delVac(${v.id})">✕</button></div></td></tr>`;
   }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">해당 휴가가 없습니다</td></tr>';
 }
 function setFilter(f,btn){curFilter=f;renderEmp();}
+function setStatusTab(tab){
+  curStatusTab=tab;
+  // 탭 버튼 스타일 토글
+  const btnA=document.getElementById('status-tab-active');
+  const btnD=document.getElementById('status-tab-done');
+  if(btnA&&btnD){
+    if(tab==='active'){
+      btnA.style.background='var(--navy)';btnA.style.color='#fff';
+      btnD.style.background='transparent';btnD.style.color='var(--navy)';
+    } else {
+      btnD.style.background='var(--navy)';btnD.style.color='#fff';
+      btnA.style.background='transparent';btnA.style.color='var(--navy)';
+    }
+  }
+  renderEmp();
+}
 function setFilterSel(sel){curFilter=sel.value;renderEmp();}
 function changeAnnualDays(){const n=parseInt(prompt('연간 기본 연차 일수를 입력하세요:',String(S.annualDays)));if(isNaN(n)||n<1)return;S.annualDays=n;fbSaveMeta();renderEmp();}
 
